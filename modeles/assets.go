@@ -11,11 +11,19 @@ type Employee struct {
 	UpdatedAt  time.Time
 }
 
-type OrganizationType struct {
+/*type OrganizationType struct {
 	IE  bool
 	LLC bool
 	JSC bool
-}
+}*/
+
+type OrganizationType string
+
+const (
+	OrganizationTypeIE  OrganizationType = "IE"  // Индивидуальный предприниматель
+	OrganizationTypeLLC OrganizationType = "LLC" // Общество с ограниченной ответственностью
+	OrganizationTypeJSC OrganizationType = "JSC" // Акционерное общество
+)
 
 type Organization struct {
 	Id          int64
