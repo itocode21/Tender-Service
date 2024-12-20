@@ -19,8 +19,6 @@ func InitDB() (*sql.DB, error) {
 		return nil, fmt.Errorf("ошибка при проверке подключенияк дб: %w", err)
 	}
 
-	db.SetMaxOpenConns(10)
-	db.SetMaxIdleConns(5)
 	if err := createTable(db); err != nil {
 		return nil, err
 	}
