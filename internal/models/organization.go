@@ -1,15 +1,8 @@
-package modeles
+package models
 
-import "time"
-
-type Employee struct {
-	Id         int64
-	UserName   string
-	Firstname  string
-	SecondName string
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
-}
+import (
+	"time"
+)
 
 /*type OrganizationType struct {
 	IE  bool
@@ -37,5 +30,5 @@ type Organization struct {
 type OrganizationResponsible struct {
 	Id             int64
 	OrganizationId *Organization
-	UserID         *Employee
+	UserID         *User
 }
