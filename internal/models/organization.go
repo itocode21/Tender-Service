@@ -1,6 +1,8 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
 /*type OrganizationType struct {
 	IE  bool
@@ -28,5 +30,5 @@ type Organization struct {
 type OrganizationResponsible struct {
 	Id             int64
 	OrganizationId *Organization
-	UserID         *Employee
+	UserID         *User
 }

@@ -2,11 +2,11 @@ package models
 
 import "time"
 
-type Employee struct {
-	Id         int64
-	UserName   string
-	Firstname  string
-	SecondName string
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
+type User struct {
+	ID        string    `json:"id"`
+	Username  string    `json:"username"`
+	FirstName string    `json:"first_name"`
+	LastName  string    `json:"last_name"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
