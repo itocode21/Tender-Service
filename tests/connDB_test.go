@@ -18,7 +18,7 @@ func init() {
 }
 
 func TestInitDB(t *testing.T) {
-	// Используйте переменные окружения для строки подключения
+	// переменные окружения для строки подключения
 	dbHost := os.Getenv("DB_HOST")
 	dbPort := os.Getenv("DB_PORT")
 	dbUser := os.Getenv("DB_USER")
@@ -29,12 +29,12 @@ func TestInitDB(t *testing.T) {
 		t.Fatal("Не указаны необходимые переменные окружения для подключения к базе данных")
 	}
 
-	// Инициализация базы данных через ваш метод
+	// Инициализация базы данных
 	createdDB, err := postgresqldb.InitDB()
 	if err != nil {
 		t.Fatalf("Ошибка вызова postgresqldb.InitDB: %v", err)
 	}
-	defer createdDB.Close() // Убедитесь, что соединение закрыто
+	defer createdDB.Close() // закрываем соединение
 
 	if createdDB == nil {
 		t.Fatal("Ожидаемое подключения к базе пустое")
