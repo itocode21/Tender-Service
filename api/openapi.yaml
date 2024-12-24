@@ -1,0 +1,647 @@
+openapi: 3.0.0
+info:
+  title: Tender Service API
+  description: API для управления организациями, тендерами и предложениями.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+paths:
+  /organizations:
+    get:
+      summary: Получить список организаций
+      responses:
+        '200':
+          description: Успешный запрос. Возвращает список организаций.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Organization'
+        '500':
+            description: Ошибка сервера.
+    post:
+      summary: Создать новую организацию
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Organization'
+      responses:
+        '201':
+          description: Организация успешно создана.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+        '400':
+          description: Некорректный ввод.
+        '500':
+            description: Ошибка сервера.
+  /organizations/{id}:
+    get:
+      summary: Получить организацию по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID организации
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Успешный запрос. Возвращает организацию.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+        '404':
+          description: Организация не найдена.
+        '400':
+          description: Некорректный ввод.
+        '500':
+            description: Ошибка сервера.
+    put:
+      summary: Обновить организацию по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID организации
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Organization'
+      responses:
+        '200':
+          description: Организация успешно обновлена.
+          content:
+            application/json:
+              schema:
+                 $ref: '#/components/schemas/Organization'
+        '400':
+          description: Некорректный ввод.
+        '500':
+            description: Ошибка сервера.
+    delete:
+      summary: Удалить организацию по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID организации
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Организация успешно удалена.
+        '400':
+          description: Некорректный ввод.
+        '500':
+            description: Ошибка сервера.
+  /organizations/{id}/responsibles:
+    post:
+      summary: Добавить ответственного за организацию
+      parameters:
+         - name: id
+           in: path
+           required: true
+           description: ID организации
+           schema:
+             type: integer
+             format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrganizationResponsible'
+      responses:
+        '201':
+            description: Ответственный за организацию успешно добавлен.
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/OrganizationResponsible'
+        '400':
+          description: Некорректный ввод.
+        '500':
+            description: Ошибка сервера.
+    delete:
+      summary: Удалить ответственного за организацию
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID организации
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+           description: Ответственный за организацию успешно удален.
+        '400':
+          description: Некорректный ввод.
+        '500':
+            description: Ошибка сервера.
+  /tenders:
+    get:
+      summary: Получить список тендеров
+      responses:
+        '200':
+          description: Успешный запрос. Возвращает список тендеров.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tender'
+        '500':
+            description: Ошибка сервера.
+    post:
+      summary: Создать новый тендер
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Tender'
+      responses:
+        '201':
+          description: Тендер успешно создан.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tender'
+        '400':
+          description: Некорректный ввод.
+        '500':
+            description: Ошибка сервера.
+  /tenders/{id}:
+    get:
+      summary: Получить тендер по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID тендера
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Успешный запрос. Возвращает тендер.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tender'
+        '404':
+          description: Тендер не найден.
+        '400':
+          description: Некорректный ввод.
+        '500':
+            description: Ошибка сервера.
+    put:
+      summary: Обновить тендер по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID тендера
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Tender'
+      responses:
+        '200':
+          description: Тендер успешно обновлен.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tender'
+        '400':
+          description: Некорректный ввод.
+        '500':
+            description: Ошибка сервера.
+    delete:
+      summary: Удалить тендер по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID тендера
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Тендер успешно удален.
+        '400':
+          description: Некорректный ввод.
+        '500':
+            description: Ошибка сервера.
+  /tenders/organization/{organization_id}:
+    get:
+      summary: Получить список тендеров по ID организации
+      parameters:
+        - name: organization_id
+          in: path
+          required: true
+          description: ID организации
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Успешный запрос. Возвращает список тендеров.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tender'
+        '400':
+          description: Некорректный ввод.
+        '500':
+            description: Ошибка сервера.
+  /tenders/{id}/publish:
+    put:
+      summary: Опубликовать тендер по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID тендера
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Тендер успешно опубликован.
+        '400':
+          description: Некорректный ввод.
+        '500':
+            description: Ошибка сервера.
+  /tenders/{id}/close:
+    put:
+      summary: Закрыть тендер по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID тендера
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Тендер успешно закрыт.
+        '400':
+          description: Некорректный ввод.
+        '500':
+            description: Ошибка сервера.
+  /tenders/{id}/cancel:
+    put:
+        summary: Отменить тендер по ID
+        parameters:
+          - name: id
+            in: path
+            required: true
+            description: ID тендера
+            schema:
+              type: integer
+              format: int64
+        responses:
+          '200':
+            description: Тендер успешно отменен.
+          '400':
+            description: Некорректный ввод.
+          '500':
+              description: Ошибка сервера.
+  /proposals:
+    get:
+      summary: Получить список предложений
+      responses:
+        '200':
+          description: Успешный запрос. Возвращает список предложений.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Proposal'
+        '500':
+          description: Ошибка сервера.
+    post:
+      summary: Создать новое предложение
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Proposal'
+      responses:
+        '201':
+          description: Предложение успешно создано.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Proposal'
+        '400':
+          description: Некорректный ввод.
+        '500':
+            description: Ошибка сервера.
+  /proposals/{id}:
+    get:
+      summary: Получить предложение по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID предложения
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Успешный запрос. Возвращает предложение.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Proposal'
+        '404':
+          description: Предложение не найдено.
+        '400':
+          description: Некорректный ввод.
+        '500':
+            description: Ошибка сервера.
+    put:
+      summary: Обновить предложение по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID предложения
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Proposal'
+      responses:
+        '200':
+          description: Предложение успешно обновлено.
+          content:
+            application/json:
+              schema:
+                 $ref: '#/components/schemas/Proposal'
+        '400':
+          description: Некорректный ввод.
+        '500':
+            description: Ошибка сервера.
+    delete:
+      summary: Удалить предложение по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID предложения
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Предложение успешно удалено.
+        '400':
+          description: Некорректный ввод.
+        '500':
+            description: Ошибка сервера.
+  /proposals/tender/{tender_id}:
+    get:
+      summary: Получить список предложений по ID тендера
+      parameters:
+        - name: tender_id
+          in: path
+          required: true
+          description: ID тендера
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Успешный запрос. Возвращает список предложений.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Proposal'
+        '400':
+          description: Некорректный ввод.
+        '500':
+            description: Ошибка сервера.
+  /proposals/{id}/publish:
+    put:
+      summary: Опубликовать предложение по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID предложения
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Предложение успешно опубликовано.
+        '400':
+          description: Некорректный ввод.
+        '500':
+            description: Ошибка сервера.
+  /proposals/{id}/accept:
+    put:
+      summary: Принять предложение по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID предложения
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Предложение успешно принято.
+        '400':
+          description: Некорректный ввод.
+        '500':
+            description: Ошибка сервера.
+  /proposals/{id}/reject:
+    put:
+      summary: Отклонить предложение по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID предложения
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Предложение успешно отклонено.
+        '400':
+          description: Некорректный ввод.
+        '500':
+            description: Ошибка сервера.
+  /proposals/{id}/cancel:
+    put:
+        summary: Отменить предложение по ID
+        parameters:
+          - name: id
+            in: path
+            required: true
+            description: ID предложения
+            schema:
+              type: integer
+              format: int64
+        responses:
+          '200':
+            description: Предложение успешно отменено.
+          '400':
+            description: Некорректный ввод.
+          '500':
+              description: Ошибка сервера.
+components:
+  schemas:
+    Organization:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Уникальный идентификатор организации
+        name:
+          type: string
+          description: Название организации
+        description:
+          type: string
+          description: Описание организации
+        type:
+           type: string
+           description: Тип организации
+        created_at:
+          type: string
+          format: date-time
+          description: Время создания записи
+        updated_at:
+          type: string
+          format: date-time
+          description: Время последнего обновления записи
+    OrganizationResponsible:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Уникальный идентификатор связи
+        organization_id:
+           $ref: '#/components/schemas/Organization'
+        user_id:
+           $ref: '#/components/schemas/User'
+    Tender:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Уникальный идентификатор тендера
+        name:
+          type: string
+          description: Название тендера
+        description:
+          type: string
+          description: Описание тендера
+        organization_id:
+          type: integer
+          format: int64
+          description: ID организации, которая опубликовала тендер
+        publication_date:
+            type: string
+            format: date-time
+            description: Дата публикации тендера
+        end_date:
+            type: string
+            format: date-time
+            description: Дата окончания тендера
+        status:
+           type: string
+           description: Статус тендера
+        created_at:
+          type: string
+          format: date-time
+          description: Время создания записи
+        updated_at:
+          type: string
+          format: date-time
+          description: Время последнего обновления записи
+    Proposal:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Уникальный идентификатор предложения
+        tender_id:
+          type: integer
+          format: int64
+          description: ID тендера, к которому относится предложение
+        organization_id:
+          type: integer
+          format: int64
+          description: ID организации, которая создала предложение
+        description:
+          type: string
+          description: Описание предложения
+        publication_date:
+            type: string
+            format: date-time
+            description: Дата публикации предложения
+        price:
+          type: number
+          format: double
+          description: Цена предложения
+        status:
+           type: string
+           description: Статус предложения
+        created_at:
+          type: string
+          format: date-time
+          description: Время создания записи
+        updated_at:
+          type: string
+          format: date-time
+          description: Время последнего обновления записи
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Уникальный идентификатор пользователя
