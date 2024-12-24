@@ -4,17 +4,16 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"os"
 
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/joho/godotenv"
-
-	"os"
 )
 
 func init() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatalf("Ошибка загрузки .env файла")
+		log.Fatalf("Ошибка загрузки .env файла: %v", err)
 	}
 }
 
@@ -31,77 +30,85 @@ func InitDB() (*sql.DB, error) {
 
 	db, err := sql.Open("pgx", connStr)
 	if err != nil {
-		return nil, fmt.Errorf("error connecting to the database: %w", err)
+		return nil, fmt.Errorf("ошибка подключения к базе данных: %w", err)
 	}
 
-	// Проверка подключения
-	if err := db.Ping(); err != nil {
-		return nil, fmt.Errorf("error pinging the database: %w", err)
+	// Проверка подключения, обработка sql.ErrNoRows
+	err = db.Ping()
+	if err != nil {
+		return nil, fmt.Errorf("ошибка проверки подключения к базе данных: %w", err)
 	}
 
-	if err := createTable(db); err != nil {
-		return nil, err
+	// Создаем транзакцию
+	tx, err := db.Begin()
+	if err != nil {
+		return nil, fmt.Errorf("ошибка начала транзакции: %w", err)
+	}
+	defer tx.Rollback() // Автоматический откат если ошибка
+
+	if err := createTables(tx); err != nil {
+		return nil, fmt.Errorf("ошибка при создании таблиц: %w", err)
 	}
 
-	return db, nil
+	if err := tx.Commit(); err != nil {
+		return nil, fmt.Errorf("ошибка коммита транзакции: %w", err)
+	}
+
+	return db, nil // Возвращаем подключение
 }
 
-func createTable(db *sql.DB) error {
-	// Создание типа organization_type, если он не существует
-	createOrganizationType := `
-    DO $$ BEGIN
-        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'organization_type') THEN
-            CREATE TYPE organization_type AS ENUM (
-                'IE',
-                'LLC',
-                'JSC'
-            );
-        END IF;
-    END $$;`
-
-	_, err := db.Exec(createOrganizationType)
+func createTables(tx *sql.Tx) error {
+	// Создание типа organization_type
+	_, err := tx.Exec(`
+		DO $$ 
+		BEGIN
+			IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'organization_type') THEN
+				CREATE TYPE organization_type AS ENUM ('IE', 'LLC', 'JSC');
+			END IF;
+		END $$;
+	`)
 	if err != nil {
 		return fmt.Errorf("ошибка при создании типа organization_type: %w", err)
 	}
 
 	// Создание таблицы employees
-	createEmployeeTable := `
-    CREATE TABLE IF NOT EXISTS employees (
-        id SERIAL PRIMARY KEY,
-        username VARCHAR(50) UNIQUE NOT NULL,
-        first_name VARCHAR(50),
-        last_name VARCHAR(50),
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);`
-
-	_, err = db.Exec(createEmployeeTable)
+	_, err = tx.Exec(`
+        CREATE TABLE IF NOT EXISTS employees (
+            id SERIAL PRIMARY KEY,
+            username VARCHAR(50) UNIQUE NOT NULL,
+            first_name VARCHAR(50),
+            last_name VARCHAR(50),
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    `)
 	if err != nil {
 		return fmt.Errorf("ошибка при создании таблицы employees: %w", err)
 	}
 
 	// Создание таблицы organizations
-	createOrganizationTable := `
-    CREATE TABLE IF NOT EXISTS organizations (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(100) NOT NULL,
-        description TEXT,
-        type organization_type,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);`
-
-	_, err = db.Exec(createOrganizationTable)
+	_, err = tx.Exec(`
+        CREATE TABLE IF NOT EXISTS organizations (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(100) NOT NULL,
+            description TEXT,
+            type organization_type,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    `)
 	if err != nil {
 		return fmt.Errorf("ошибка при создании таблицы organizations: %w", err)
 	}
 
 	// Создание таблицы organization_responsibles
-	createOrganizationResponsibleTable := `
-    CREATE TABLE IF NOT EXISTS organization_responsibles (
-        id SERIAL PRIMARY KEY,
-        organization_id INT REFERENCES organizations(id) ON DELETE CASCADE,
-        user_id INT REFERENCES employees(id) ON DELETE CASCADE);`
-
-	_, err = db.Exec(createOrganizationResponsibleTable)
+	_, err = tx.Exec(`
+        CREATE TABLE IF NOT EXISTS organization_responsibles (
+            id SERIAL PRIMARY KEY,
+            organization_id INT REFERENCES organizations(id) ON DELETE CASCADE,
+            user_id INT REFERENCES employees(id) ON DELETE CASCADE
+        )
+    `)
 	if err != nil {
 		return fmt.Errorf("ошибка при создании таблицы organization_responsibles: %w", err)
 	}
