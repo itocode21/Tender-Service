@@ -29,6 +29,6 @@ type Organization struct {
 
 type OrganizationResponsible struct {
 	Id             int64
-	OrganizationId *Organization
+	OrganizationID *Organization
 	UserID         *User
 }

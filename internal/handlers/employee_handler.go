@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -41,7 +42,7 @@ func (h *EmployeeHandler) RegisterHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	// Заполнение полей ID и других данных пользователя
-	user.ID = id                // Предполагается, что `id` - это ID, который вы получили от сервиса
+	user.Id = id                // Предполагается, что `id` - это ID, который получили от сервиса
 	user.CreatedAt = time.Now() // Заполняем дату создания
 	user.UpdatedAt = time.Now() // Заполняем дату обновления
 
@@ -53,10 +54,17 @@ func (h *EmployeeHandler) RegisterHandler(w http.ResponseWriter, r *http.Request
 func (h *EmployeeHandler) GetUserHandler(w http.ResponseWriter, r *http.Request) {
 	// Извлечение ID из URL
 	vars := mux.Vars(r) // Используем mux для извлечения переменных из URL
-	id := vars["id"]
+	idStr := vars["id"] // Сохраняем ID как строку
 
+	// Преобразование ID из строки в int
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid ID format", http.StatusBadRequest)
+		return
+	}
 	// Получение пользователя из сервиса
-	user, err := h.service.GetUserByID(id) // Используем сервис для получения пользователя
+
+	user, err := h.service.GetUserByID(id)
 	if err != nil {
 		if err.Error() == "user not found" {
 			http.Error(w, err.Error(), http.StatusNotFound)
