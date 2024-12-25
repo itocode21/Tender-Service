@@ -30,17 +30,23 @@ func TestInitDB(t *testing.T) {
 	}
 
 	// Инициализация базы данных
-	createdDB, err := postgresqldb.InitDB()
+	db, err := postgresqldb.InitDB()
 	if err != nil {
 		t.Fatalf("Ошибка вызова postgresqldb.InitDB: %v", err)
 	}
-	defer createdDB.Close() // закрываем соединение
 
-	if createdDB == nil {
+	defer func() {
+		err := db.Close()
+		if err != nil {
+			log.Printf("Ошибка при закрытии соединения с базой данных %v", err)
+		}
+	}()
+
+	if db == nil {
 		t.Fatal("Ожидаемое подключения к базе пустое")
 	}
 
-	err = createdDB.Ping()
+	err = db.Ping()
 	if err != nil {
 		t.Fatalf("Ошибка пинга базы: %v", err)
 	}
@@ -50,7 +56,7 @@ func TestInitDB(t *testing.T) {
 	for _, table := range tables {
 		t.Run("CheckTableExists_"+table, func(t *testing.T) {
 			var exists bool
-			err = createdDB.QueryRow("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = $1)", table).Scan(&exists)
+			err = db.QueryRow("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = $1)", table).Scan(&exists)
 			if err != nil {
 				t.Fatalf("Не удалось проверить, существует ли таблица %s: %v", table, err)
 			}
