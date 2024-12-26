@@ -9,8 +9,8 @@ import (
 
 // EmployeeService интерфейс для работы с пользователями
 type EmployeeService interface {
-	Register(user *models.User) (string, error)
-	GetUserByID(id string) (*models.User, error)
+	Register(user *models.User) (int, error)
+	GetUserByID(id int) (*models.User, error)
 }
 
 type employeeService struct {
@@ -23,15 +23,15 @@ func NewEmployeeService(repo repository.EmployeeRepository) EmployeeService {
 }
 
 // Register регистрирует нового пользователя
-func (s *employeeService) Register(user *models.User) (string, error) {
+func (s *employeeService) Register(user *models.User) (int, error) {
 	if user.Username == "" {
-		return "", errors.New("Имя пользователя не может быть пустым")
+		return 0, errors.New("Имя пользователя не может быть пустым") // Возвращаем 0 вместо "" для int
 	}
 	id, err := s.repo.Create(user) // Получаем ID и ошибку
 	return id, err                 // Возвращаем оба значения
 }
 
 // GetUser ByID получает пользователя по ID
-func (s *employeeService) GetUserByID(id string) (*models.User, error) {
+func (s *employeeService) GetUserByID(id int) (*models.User, error) {
 	return s.repo.GetByID(id)
 }
