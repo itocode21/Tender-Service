@@ -12,13 +12,12 @@ import (
 type TenderService interface {
 	Create(tender *models.Tender) (int64, error)
 	GetByID(id int64) (*models.Tender, error)
-	GetByOrganizationID(organizationID int64) ([]*models.Tender, error)
 	Update(tender *models.Tender) error
 	Delete(id int64) error
 	List() ([]*models.Tender, error)
+	ListByOrganizationID(organizationId int64) ([]*models.Tender, error)
 	Publish(id int64) error
 	Close(id int64) error
-	Cancel(id int64) error
 }
 
 type tenderService struct {
@@ -32,16 +31,19 @@ func NewTenderService(tenderRepo repository.TenderRepository) TenderService {
 
 // Create создает новый тендер
 func (s *tenderService) Create(tender *models.Tender) (int64, error) {
+	// Проверка имени
 	if tender.Name == "" {
-		return 0, errors.New("название тендера не может быть пустым")
+		return 0, errors.New("имя тендера не может быть пустым")
 	}
-
+	// Проверка организации
 	if tender.OrganizationID == 0 {
-		return 0, errors.New("необходимо указать организацию")
+		return 0, errors.New("идентификатор организации не может быть пустым")
 	}
+	// Устанавливаем начальную версию
+	tender.Version = 1
+	// Устанавливаем время создания
+	tender.CreatedAt = time.Now()
 
-	tender.Status = models.TenderStatusDraft
-	tender.PublicationDate = time.Now() // Устанавливаем время публикации
 	id, err := s.tenderRepo.Create(tender)
 	if err != nil {
 		return 0, err
@@ -54,13 +56,18 @@ func (s *tenderService) GetByID(id int64) (*models.Tender, error) {
 	return s.tenderRepo.GetByID(id)
 }
 
-// GetByOrganizationID получает все тендеры по ID организации
-func (s *tenderService) GetByOrganizationID(organizationID int64) ([]*models.Tender, error) {
-	return s.tenderRepo.GetByOrganizationID(organizationID)
-}
-
 // Update обновляет данные тендера
 func (s *tenderService) Update(tender *models.Tender) error {
+	// Проверка существования тендера
+	existingTender, err := s.tenderRepo.GetByID(tender.ID)
+	if err != nil {
+		return err
+	}
+
+	// Обновляем версию
+	tender.Version = existingTender.Version + 1
+	tender.UpdatedAt = time.Now()
+
 	return s.tenderRepo.Update(tender)
 }
 
@@ -74,49 +81,32 @@ func (s *tenderService) List() ([]*models.Tender, error) {
 	return s.tenderRepo.List()
 }
 
-// Publish устанавливает статус тендера как "published"
+// ListByOrganizationID возвращает список тендеров по ID организации
+func (s *tenderService) ListByOrganizationID(organizationId int64) ([]*models.Tender, error) {
+	return s.tenderRepo.ListByOrganizationID(organizationId)
+}
+
+// Publish публикует тендер по ID
 func (s *tenderService) Publish(id int64) error {
 	tender, err := s.tenderRepo.GetByID(id)
 	if err != nil {
 		return err
 	}
-	if tender.Status == models.TenderStatusPublished {
-		return errors.New("тендер уже опубликован")
-	}
 
 	tender.Status = models.TenderStatusPublished
-	tender.PublicationDate = time.Now()
+	tender.UpdatedAt = time.Now()
 	return s.tenderRepo.Update(tender)
 }
 
-// Close устанавливает статус тендера как "closed"
+// Close закрывает тендер по ID
 func (s *tenderService) Close(id int64) error {
 	tender, err := s.tenderRepo.GetByID(id)
 	if err != nil {
 		return err
 	}
-	if tender.Status == models.TenderStatusClosed {
-		return errors.New("тендер уже закрыт")
-	}
-	if tender.Status == models.TenderStatusCancelled {
-		return errors.New("невозможно закрыть отмененный тендер")
-	}
-	tender.Status = models.TenderStatusClosed
-	return s.tenderRepo.Update(tender)
-}
 
-// Cancel устанавливает статус тендера как "cancelled"
-func (s *tenderService) Cancel(id int64) error {
-	tender, err := s.tenderRepo.GetByID(id)
-	if err != nil {
-		return err
-	}
-	if tender.Status == models.TenderStatusCancelled {
-		return errors.New("тендер уже отменен")
-	}
-	if tender.Status == models.TenderStatusClosed {
-		return errors.New("невозможно отменить закрытый тендер")
-	}
-	tender.Status = models.TenderStatusCancelled
+	tender.Status = models.TenderStatusClosed
+	tender.UpdatedAt = time.Now()
+
 	return s.tenderRepo.Update(tender)
 }

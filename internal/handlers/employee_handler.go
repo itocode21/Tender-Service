@@ -29,7 +29,7 @@ func (h *EmployeeHandler) RegisterHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	// Регистрация пользователя
-	id, err := h.service.Register(&user)
+	id, err := h.service.Create(&user)
 	if err != nil {
 		// Если ошибка связана с пустым именем пользователя, возвращаем статус 400
 		if err.Error() == "username cannot be empty" {
@@ -64,7 +64,7 @@ func (h *EmployeeHandler) GetUserHandler(w http.ResponseWriter, r *http.Request)
 	}
 	// Получение пользователя из сервиса
 
-	user, err := h.service.GetUserByID(id)
+	user, err := h.service.GetByID(id)
 	if err != nil {
 		if err.Error() == "user not found" {
 			http.Error(w, err.Error(), http.StatusNotFound)

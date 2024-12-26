@@ -9,8 +9,11 @@ import (
 
 // EmployeeService интерфейс для работы с пользователями
 type EmployeeService interface {
-	Register(user *models.User) (int, error)
-	GetUserByID(id int) (*models.User, error)
+	Create(user *models.User) (int, error)
+	GetByID(id int) (*models.User, error)
+	Update(employee *models.User) error
+	Delete(id int) error
+	List() ([]*models.User, error)
 }
 
 type employeeService struct {
@@ -22,16 +25,32 @@ func NewEmployeeService(repo repository.EmployeeRepository) EmployeeService {
 	return &employeeService{repo: repo}
 }
 
-// Register регистрирует нового пользователя
-func (s *employeeService) Register(user *models.User) (int, error) {
+// Create создает нового пользователя
+func (s *employeeService) Create(user *models.User) (int, error) {
 	if user.Username == "" {
-		return 0, errors.New("Имя пользователя не может быть пустым") // Возвращаем 0 вместо "" для int
+		return 0, errors.New("имя пользователя не может быть пустым")
 	}
-	id, err := s.repo.Create(user) // Получаем ID и ошибку
-	return id, err                 // Возвращаем оба значения
+	id, err := s.repo.Create(user)
+	return int(id), err
 }
 
-// GetUser ByID получает пользователя по ID
-func (s *employeeService) GetUserByID(id int) (*models.User, error) {
-	return s.repo.GetByID(id)
+// GetByID получает пользователя по ID
+func (s *employeeService) GetByID(id int) (*models.User, error) {
+	emp, err := s.repo.GetByID(int64(id))
+	return emp, err
+}
+
+// Update обновляет данные сотрудника
+func (s *employeeService) Update(employee *models.User) error {
+	return s.repo.Update(employee)
+}
+
+// Delete удаляет сотрудника по ID
+func (s *employeeService) Delete(id int) error {
+	return s.repo.Delete(int64(id))
+}
+
+// List возвращает список всех сотрудников
+func (s *employeeService) List() ([]*models.User, error) {
+	return s.repo.List()
 }
