@@ -141,7 +141,7 @@ func (h *TenderHandler) GetTendersByOrganizationHandler(w http.ResponseWriter, r
 		return
 	}
 
-	tenders, err := h.service.GetByOrganizationID(organizationID)
+	tenders, err := h.service.GetByID(organizationID)
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
@@ -211,7 +211,7 @@ func (h *TenderHandler) CancelTenderHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	err = h.service.Cancel(id)
+	err = h.service.Close(id)
 	if err != nil {
 		if err.Error() == "тендер уже отменен" || err.Error() == "невозможно отменить закрытый тендер" {
 			http.Error(w, err.Error(), http.StatusBadRequest)

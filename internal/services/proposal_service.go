@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/itocode21/Tender-Service/internal/models"
@@ -45,8 +46,9 @@ func (s *proposalService) Create(proposal *models.Proposal) (int64, error) {
 	if proposal.OrganizationID == 0 {
 		return 0, errors.New("необходимо указать организацию")
 	}
+	proposal.Version = 1
+	proposal.CreatedAt = time.Now()
 	proposal.PublicationDate = time.Now()
-	proposal.Status = models.ProposalStatusDraft
 
 	id, err := s.proposalRepo.Create(proposal)
 	if err != nil {
@@ -67,6 +69,15 @@ func (s *proposalService) GetByTenderID(tenderID int64) ([]*models.Proposal, err
 
 // Update обновляет данные предложения
 func (s *proposalService) Update(proposal *models.Proposal) error {
+	// Проверка существования предложения
+	existingProposal, err := s.proposalRepo.GetByID(proposal.ID)
+	if err != nil {
+		return err
+	}
+
+	// Обновляем версию
+	proposal.Version = existingProposal.Version + 1
+	proposal.UpdatedAt = time.Now()
 	return s.proposalRepo.Update(proposal)
 }
 
@@ -84,12 +95,15 @@ func (s *proposalService) List() ([]*models.Proposal, error) {
 func (s *proposalService) Publish(id int64) error {
 	proposal, err := s.proposalRepo.GetByID(id)
 	if err != nil {
-		return err
+		return fmt.Errorf("предложение не найдено: %w", err)
 	}
+
 	if proposal.Status == models.ProposalStatusPublished {
 		return errors.New("предложение уже опубликовано")
 	}
+
 	proposal.Status = models.ProposalStatusPublished
+	proposal.UpdatedAt = time.Now()
 	proposal.PublicationDate = time.Now()
 	return s.proposalRepo.Update(proposal)
 }
@@ -98,24 +112,16 @@ func (s *proposalService) Publish(id int64) error {
 func (s *proposalService) Accept(id int64) error {
 	proposal, err := s.proposalRepo.GetByID(id)
 	if err != nil {
-		return err
+		return fmt.Errorf("предложение не найдено: %w", err)
 	}
 
 	if proposal.Status == models.ProposalStatusAccepted {
 		return errors.New("предложение уже принято")
 	}
 
-	if proposal.Status == models.ProposalStatusRejected {
-		return errors.New("невозможно принять отклоненное предложение")
-	}
-
-	if proposal.Status == models.ProposalStatusCancelled {
-		return errors.New("невозможно принять отмененное предложение")
-	}
-
 	tender, err := s.tenderRepo.GetByID(proposal.TenderID)
 	if err != nil {
-		return err
+		return fmt.Errorf("тендер не найден: %w", err)
 	}
 
 	if tender.Status == models.TenderStatusClosed {
@@ -127,12 +133,13 @@ func (s *proposalService) Accept(id int64) error {
 	}
 
 	proposal.Status = models.ProposalStatusAccepted
-
+	proposal.UpdatedAt = time.Now()
 	if err := s.proposalRepo.Update(proposal); err != nil {
 		return err
 	}
 
 	tender.Status = models.TenderStatusClosed
+	tender.UpdatedAt = time.Now()
 	return s.tenderRepo.Update(tender)
 }
 
@@ -140,8 +147,9 @@ func (s *proposalService) Accept(id int64) error {
 func (s *proposalService) Reject(id int64) error {
 	proposal, err := s.proposalRepo.GetByID(id)
 	if err != nil {
-		return err
+		return fmt.Errorf("предложение не найдено: %w", err)
 	}
+
 	if proposal.Status == models.ProposalStatusRejected {
 		return errors.New("предложение уже отклонено")
 	}
@@ -150,10 +158,8 @@ func (s *proposalService) Reject(id int64) error {
 		return errors.New("невозможно отклонить принятое предложение")
 	}
 
-	if proposal.Status == models.ProposalStatusCancelled {
-		return errors.New("невозможно отклонить отмененное предложение")
-	}
 	proposal.Status = models.ProposalStatusRejected
+	proposal.UpdatedAt = time.Now()
 	return s.proposalRepo.Update(proposal)
 }
 
@@ -161,8 +167,9 @@ func (s *proposalService) Reject(id int64) error {
 func (s *proposalService) Cancel(id int64) error {
 	proposal, err := s.proposalRepo.GetByID(id)
 	if err != nil {
-		return err
+		return fmt.Errorf("предложение не найдено: %w", err)
 	}
+
 	if proposal.Status == models.ProposalStatusCancelled {
 		return errors.New("предложение уже отменено")
 	}
@@ -171,10 +178,7 @@ func (s *proposalService) Cancel(id int64) error {
 		return errors.New("невозможно отменить принятое предложение")
 	}
 
-	if proposal.Status == models.ProposalStatusRejected {
-		return errors.New("невозможно отменить отклоненное предложение")
-	}
-
 	proposal.Status = models.ProposalStatusCancelled
+	proposal.UpdatedAt = time.Now()
 	return s.proposalRepo.Update(proposal)
 }

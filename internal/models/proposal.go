@@ -6,7 +6,7 @@ import "time"
 type ProposalStatus string
 
 const (
-	ProposalStatusDraft     ProposalStatus = "draft"
+	ProposalStatusCreated   ProposalStatus = "created"
 	ProposalStatusPublished ProposalStatus = "published"
 	ProposalStatusAccepted  ProposalStatus = "accepted"
 	ProposalStatusRejected  ProposalStatus = "rejected"
@@ -21,7 +21,7 @@ type Proposal struct {
 	PublicationDate time.Time      `json:"publication_date"`
 	Price           float64        `json:"price"`
 	Status          ProposalStatus `json:"status"`
-	Version         int            `json:"version"` // Добавили поле Version
+	Version         int            `json:"version"`
 	CreatedAt       time.Time      `json:"created_at"`
 	UpdatedAt       time.Time      `json:"updated_at"`
 }

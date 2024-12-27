@@ -89,9 +89,14 @@ func (h *OrganizationHandler) UpdateOrganizationHandler(w http.ResponseWriter, r
 
 	err = h.service.Update(&org)
 	if err != nil {
+		if err.Error() == "имя организации не может быть пустым" {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
+
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(org)
 }
