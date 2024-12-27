@@ -11,10 +11,10 @@ import (
 type TenderRepository interface {
 	Create(tender *models.Tender) (int64, error)
 	GetByID(id int64) (*models.Tender, error)
-	GetByOrganizationID(organizationID int64) ([]*models.Tender, error)
 	Update(tender *models.Tender) error
 	Delete(id int64) error
 	List() ([]*models.Tender, error)
+	ListByOrganizationID(organizationId int64) ([]*models.Tender, error)
 }
 
 // tenderRepository реализация интерфейса TenderRepository
@@ -30,16 +30,21 @@ func NewTenderRepository(db *sql.DB) TenderRepository {
 // Create создает новый тендер
 func (r *tenderRepository) Create(tender *models.Tender) (int64, error) {
 	err := r.db.QueryRow(
-		`INSERT INTO tenders (name, description, organization_id, publication_date, end_date, status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
-		tender.Name, tender.Description, tender.OrganizationID, tender.PublicationDate, tender.EndDate, tender.Status).Scan(&tender.ID)
-	return tender.ID, err
+		`INSERT INTO tenders (name, description, organization_id, publication_date, end_date, status, version)
+		VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
+		tender.Name, tender.Description, tender.OrganizationID, tender.PublicationDate, tender.EndDate, models.TenderStatusCreated, tender.Version).Scan(&tender.ID)
+	if err != nil {
+		return 0, err
+	}
+	tender.Status = models.TenderStatusCreated
+	return tender.ID, nil
 }
 
 // GetByID получает тендер по ID
 func (r *tenderRepository) GetByID(id int64) (*models.Tender, error) {
-	row := r.db.QueryRow(`SELECT id, name, description, organization_id, publication_date, end_date, status, created_at, updated_at FROM tenders WHERE id = $1`, id)
+	row := r.db.QueryRow(`SELECT id, name, description, organization_id, publication_date, end_date, status, version, created_at, updated_at FROM tenders WHERE id = $1`, id)
 	var tender models.Tender
-	if err := row.Scan(&tender.ID, &tender.Name, &tender.Description, &tender.OrganizationID, &tender.PublicationDate, &tender.EndDate, &tender.Status, &tender.CreatedAt, &tender.UpdatedAt); err != nil {
+	if err := row.Scan(&tender.ID, &tender.Name, &tender.Description, &tender.OrganizationID, &tender.PublicationDate, &tender.EndDate, &tender.Status, &tender.Version, &tender.CreatedAt, &tender.UpdatedAt); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errors.New("tender not found")
 		}
@@ -48,33 +53,11 @@ func (r *tenderRepository) GetByID(id int64) (*models.Tender, error) {
 	return &tender, nil
 }
 
-// GetByOrganizationID получает все тендеры по id организации
-func (r *tenderRepository) GetByOrganizationID(organizationID int64) ([]*models.Tender, error) {
-	rows, err := r.db.Query(`SELECT id, name, description, organization_id, publication_date, end_date, status, created_at, updated_at FROM tenders WHERE organization_id = $1`, organizationID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var tenders []*models.Tender
-	for rows.Next() {
-		var tender models.Tender
-		if err := rows.Scan(&tender.ID, &tender.Name, &tender.Description, &tender.OrganizationID, &tender.PublicationDate, &tender.EndDate, &tender.Status, &tender.CreatedAt, &tender.UpdatedAt); err != nil {
-			return nil, err
-		}
-		tenders = append(tenders, &tender)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return tenders, nil
-}
-
 // Update обновляет данные тендера
 func (r *tenderRepository) Update(tender *models.Tender) error {
 	_, err := r.db.Exec(
-		`UPDATE tenders SET name = $1, description = $2, organization_id = $3, publication_date = $4, end_date = $5, status = $6, updated_at = NOW() WHERE id = $7`,
-		tender.Name, tender.Description, tender.OrganizationID, tender.PublicationDate, tender.EndDate, tender.Status, tender.ID)
+		`UPDATE tenders SET name = $1, description = $2, organization_id = $3, publication_date = $4, end_date = $5, status = $6, version = $7, updated_at = NOW() WHERE id = $8`,
+		tender.Name, tender.Description, tender.OrganizationID, tender.PublicationDate, tender.EndDate, tender.Status, tender.Version, tender.ID)
 	if err != nil {
 		return err
 	}
@@ -89,7 +72,7 @@ func (r *tenderRepository) Delete(id int64) error {
 
 // List возвращает список всех тендеров
 func (r *tenderRepository) List() ([]*models.Tender, error) {
-	rows, err := r.db.Query(`SELECT id, name, description, organization_id, publication_date, end_date, status, created_at, updated_at FROM tenders`)
+	rows, err := r.db.Query(`SELECT id, name, description, organization_id, publication_date, end_date, status, version, created_at, updated_at FROM tenders`)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +81,29 @@ func (r *tenderRepository) List() ([]*models.Tender, error) {
 	var tenders []*models.Tender
 	for rows.Next() {
 		var tender models.Tender
-		if err := rows.Scan(&tender.ID, &tender.Name, &tender.Description, &tender.OrganizationID, &tender.PublicationDate, &tender.EndDate, &tender.Status, &tender.CreatedAt, &tender.UpdatedAt); err != nil {
+		if err := rows.Scan(&tender.ID, &tender.Name, &tender.Description, &tender.OrganizationID, &tender.PublicationDate, &tender.EndDate, &tender.Status, &tender.Version, &tender.CreatedAt, &tender.UpdatedAt); err != nil {
+			return nil, err
+		}
+		tenders = append(tenders, &tender)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return tenders, nil
+}
+
+// ListByOrganizationID возвращает список всех тендеров по id организации
+func (r *tenderRepository) ListByOrganizationID(organizationId int64) ([]*models.Tender, error) {
+	rows, err := r.db.Query(`SELECT id, name, description, organization_id, publication_date, end_date, status, version, created_at, updated_at FROM tenders WHERE organization_id = $1`, organizationId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var tenders []*models.Tender
+	for rows.Next() {
+		var tender models.Tender
+		if err := rows.Scan(&tender.ID, &tender.Name, &tender.Description, &tender.OrganizationID, &tender.PublicationDate, &tender.EndDate, &tender.Status, &tender.Version, &tender.CreatedAt, &tender.UpdatedAt); err != nil {
 			return nil, err
 		}
 		tenders = append(tenders, &tender)
