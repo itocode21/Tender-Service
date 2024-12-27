@@ -52,7 +52,7 @@ func TestInitDB(t *testing.T) {
 	}
 
 	// Проверка существования таблиц
-	tables := []string{"employees", "organizations", "organization_responsibles"}
+	tables := []string{"employees", "organizations", "organization_responsibles", "tenders", "proposals"}
 	for _, table := range tables {
 		t.Run("CheckTableExists_"+table, func(t *testing.T) {
 			var exists bool
