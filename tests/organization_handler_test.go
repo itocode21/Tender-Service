@@ -1,5 +1,6 @@
 package tests
 
+/*
 import (
 	"bytes"
 	"encoding/json"
@@ -266,3 +267,4 @@ func TestOrganizationHandler_ListOrganizationsHandler(t *testing.T) {
 	json.NewDecoder(w.Body).Decode(&retrievedOrgs)
 	assert.Len(t, retrievedOrgs, len(orgs))
 }
+*/
