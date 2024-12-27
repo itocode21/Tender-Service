@@ -113,5 +113,39 @@ func createTables(tx *sql.Tx) error {
 		return fmt.Errorf("ошибка при создании таблицы organization_responsibles: %w", err)
 	}
 
+	// Создание таблицы tenders
+	_, err = tx.Exec(`
+        CREATE TABLE IF NOT EXISTS tenders (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(255) NOT NULL,
+            description TEXT,
+            organization_id INT REFERENCES organizations(id) ON DELETE CASCADE,
+            publication_date TIMESTAMP NOT NULL,
+            end_date TIMESTAMP NOT NULL,
+            version INT NOT NULL,
+			status VARCHAR(50) NOT NULL DEFAULT 'created',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    `)
+	if err != nil {
+		return fmt.Errorf("ошибка при создании таблицы tenders: %w", err)
+	}
+
+	// Создание таблицы proposals
+	_, err = tx.Exec(`
+        CREATE TABLE IF NOT EXISTS proposals (
+            id SERIAL PRIMARY KEY,
+            tender_id INT REFERENCES tenders(id) ON DELETE CASCADE,
+            employee_id INT REFERENCES employees(id) ON DELETE CASCADE,
+            description TEXT,
+			status VARCHAR(50) NOT NULL DEFAULT 'created',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    `)
+	if err != nil {
+		return fmt.Errorf("ошибка при создании таблицы proposals: %w", err)
+	}
 	return nil
 }

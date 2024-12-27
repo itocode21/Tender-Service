@@ -7,12 +7,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/itocode21/Tender-Service/internal/models"
 	"github.com/itocode21/Tender-Service/internal/repository"
+	"github.com/itocode21/Tender-Service/internal/services"
 	postgresqldb "github.com/itocode21/Tender-Service/postgresql-db"
 
-	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"github.com/itocode21/Tender-Service/internal/models"
-	_ "github.com/jackc/pgx/v4"
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
@@ -20,7 +19,6 @@ import (
 
 var db *sql.DB
 var organizationID int64
-var organizationID2 int64
 
 func setup() {
 	err1 := godotenv.Load()
@@ -33,15 +31,11 @@ func setup() {
 	if err != nil {
 		panic(err)
 	}
-	// Создание организации и получение ее ID
 	err = db.QueryRow(`INSERT INTO organizations (name, description, type, created_at, updated_at) VALUES ('Test Organization', 'Test Organization Description', $1, NOW(), NOW()) RETURNING id`, "LLC").Scan(&organizationID)
 	if err != nil {
 		panic(err)
 	}
-	err = db.QueryRow(`INSERT INTO organizations (name, description, type, created_at, updated_at) VALUES ('Test Organization 2', 'Test Organization Description 2', $1, NOW(), NOW()) RETURNING id`, "LLC").Scan(&organizationID2)
-	if err != nil {
-		panic(err)
-	}
+
 	// Очистка таблиц перед каждым тестом
 	_, err = db.Exec("DELETE FROM organization_responsibles")
 	if err != nil {
@@ -60,17 +54,19 @@ func setup() {
 	if err != nil {
 		panic(err)
 	}
+
 }
 
 func teardown() {
 	_ = db.Close()
 }
 
-func TestTenderRepository_Create(t *testing.T) {
+func TestTenderService_Create(t *testing.T) {
 	setup()
 	defer teardown()
 
 	repo := repository.NewTenderRepository(db)
+	service := services.NewTenderService(repo)
 
 	tender := &models.Tender{
 		Name:            "Test Tender",
@@ -78,27 +74,50 @@ func TestTenderRepository_Create(t *testing.T) {
 		OrganizationID:  organizationID,
 		PublicationDate: time.Now(),
 		EndDate:         time.Now().Add(24 * time.Hour),
-		Version:         1,
-		Status:          models.TenderStatusCreated,
 	}
 	// Act
-	id, err := repo.Create(tender)
+	id, err := service.Create(tender)
 
 	// Assert
 	assert.NoError(t, err)
 	assert.NotEqual(t, int64(0), id)
 
 	// проверяем что статус был записан в базу данных
-	retrievedTender, err := repo.GetByID(id)
+	retrievedTender, err := service.GetByID(id)
 	assert.NoError(t, err)
 	assert.Equal(t, models.TenderStatusCreated, retrievedTender.Status)
+
+	// test with invalid name
+	invalidTender := &models.Tender{
+		Name:            "",
+		Description:     "Test Description",
+		OrganizationID:  organizationID,
+		PublicationDate: time.Now(),
+		EndDate:         time.Now().Add(24 * time.Hour),
+	}
+	_, err = service.Create(invalidTender)
+	assert.Error(t, err)
+	assert.EqualError(t, err, "имя тендера не может быть пустым")
+
+	// test with invalid organization
+	invalidTender = &models.Tender{
+		Name:            "Test Tender",
+		Description:     "Test Description",
+		OrganizationID:  0,
+		PublicationDate: time.Now(),
+		EndDate:         time.Now().Add(24 * time.Hour),
+	}
+	_, err = service.Create(invalidTender)
+	assert.Error(t, err)
+	assert.EqualError(t, err, "идентификатор организации не может быть пустым")
 }
 
-func TestTenderRepository_GetByID(t *testing.T) {
+func TestTenderService_GetByID(t *testing.T) {
 	setup()
 	defer teardown()
 
 	repo := repository.NewTenderRepository(db)
+	service := services.NewTenderService(repo)
 
 	tender := &models.Tender{
 		Name:            "Test Tender",
@@ -109,11 +128,11 @@ func TestTenderRepository_GetByID(t *testing.T) {
 		Version:         1,
 		Status:          models.TenderStatusCreated,
 	}
-	id, err := repo.Create(tender)
+	id, err := service.Create(tender)
 	assert.NoError(t, err)
 
 	// Act
-	retrievedTender, err := repo.GetByID(id)
+	retrievedTender, err := service.GetByID(id)
 	// Assert
 	assert.NoError(t, err)
 	assert.Equal(t, tender.Name, retrievedTender.Name)
@@ -123,15 +142,17 @@ func TestTenderRepository_GetByID(t *testing.T) {
 	assert.Equal(t, tender.Status, retrievedTender.Status)
 
 	// Test non-existent tender
-	_, err = repo.GetByID(id + 1)
+	_, err = service.GetByID(id + 1)
 	assert.Error(t, err)
 	assert.EqualError(t, err, "tender not found")
 }
-func TestTenderRepository_Update(t *testing.T) {
+
+func TestTenderService_Update(t *testing.T) {
 	setup()
 	defer teardown()
 
 	repo := repository.NewTenderRepository(db)
+	service := services.NewTenderService(repo)
 
 	tender := &models.Tender{
 		Name:            "Test Tender",
@@ -142,36 +163,46 @@ func TestTenderRepository_Update(t *testing.T) {
 		Version:         1,
 		Status:          models.TenderStatusCreated,
 	}
-	id, err := repo.Create(tender)
+	id, err := service.Create(tender)
 	assert.NoError(t, err)
+	retrievedTender, _ := service.GetByID(id)
 
 	// Act
-	tender.Name = "Updated Test Tender"
-	tender.Description = "Updated Test Description"
-	tender.Version = 2
-	err = repo.Update(tender)
+	retrievedTender.Name = "Updated Test Tender"
+	retrievedTender.Description = "Updated Test Description"
+	oldVersion := retrievedTender.Version
+	err = service.Update(retrievedTender)
 
 	// Assert
 	assert.NoError(t, err)
 
-	updatedTender, err := repo.GetByID(id)
+	updatedTender, err := service.GetByID(id)
 	assert.NoError(t, err)
-	assert.Equal(t, tender.Name, updatedTender.Name)
-	assert.Equal(t, tender.Description, updatedTender.Description)
-	assert.Equal(t, tender.Version, updatedTender.Version)
-	assert.Equal(t, tender.Status, updatedTender.Status)
+	assert.Equal(t, retrievedTender.Name, updatedTender.Name)
+	assert.Equal(t, retrievedTender.Description, updatedTender.Description)
+	assert.Equal(t, oldVersion+1, updatedTender.Version)
+	assert.Equal(t, retrievedTender.Status, updatedTender.Status)
 
-	// Update non-existent tender - no error expected
-	tender.ID = id + 1
-	err = repo.Update(tender)
-	assert.NoError(t, err)
+	// Update non-existent tender - expect error
+	retrievedTender.ID = id + 1
+	err = service.Update(retrievedTender)
+	assert.Error(t, err)
+	assert.EqualError(t, err, "tender not found")
+
+	//test with invalid name
+	retrievedTender, _ = service.GetByID(id)
+	retrievedTender.Name = ""
+	err = service.Update(retrievedTender)
+	assert.Error(t, err)
+	assert.EqualError(t, err, "имя тендера не может быть пустым")
 }
 
-func TestTenderRepository_Delete(t *testing.T) {
+func TestTenderService_Delete(t *testing.T) {
 	setup()
 	defer teardown()
 
 	repo := repository.NewTenderRepository(db)
+	service := services.NewTenderService(repo)
 
 	tender := &models.Tender{
 		Name:            "Test Tender",
@@ -182,27 +213,28 @@ func TestTenderRepository_Delete(t *testing.T) {
 		Version:         1,
 		Status:          models.TenderStatusCreated,
 	}
-	id, err := repo.Create(tender)
+	id, err := service.Create(tender)
 	assert.NoError(t, err)
 
 	// Act
-	err = repo.Delete(id)
+	err = service.Delete(id)
 	assert.NoError(t, err)
 
 	// Assert that the tender is deleted
-	_, err = repo.GetByID(id)
+	_, err = service.GetByID(id)
 	assert.Error(t, err)
 	assert.EqualError(t, err, "tender not found")
 
 	// Delete non-existent tender - no error expected
-	err = repo.Delete(id)
+	err = service.Delete(id)
 	assert.NoError(t, err)
 }
-func TestTenderRepository_List(t *testing.T) {
+func TestTenderService_List(t *testing.T) {
 	setup()
 	defer teardown()
 
 	repo := repository.NewTenderRepository(db)
+	service := services.NewTenderService(repo)
 
 	// Create test tenders
 	tenders := []*models.Tender{
@@ -226,11 +258,11 @@ func TestTenderRepository_List(t *testing.T) {
 		},
 	}
 	for _, tender := range tenders {
-		_, err := repo.Create(tender)
+		_, err := service.Create(tender)
 		assert.NoError(t, err)
 	}
 	// Act
-	retrievedTenders, err := repo.List()
+	retrievedTenders, err := service.List()
 
 	// Assert
 	assert.NoError(t, err)
@@ -240,18 +272,24 @@ func TestTenderRepository_List(t *testing.T) {
 	// Test empty list
 	_, err = db.Exec("DELETE FROM tenders")
 	assert.NoError(t, err)
-	retrievedTenders, err = repo.List()
+	retrievedTenders, err = service.List()
 	assert.NoError(t, err)
 	assert.Empty(t, retrievedTenders)
 
 }
 
-func TestTenderRepository_ListByOrganizationID(t *testing.T) {
+func TestTenderService_ListByOrganizationID(t *testing.T) {
 	setup()
 	defer teardown()
 
 	repo := repository.NewTenderRepository(db)
+	service := services.NewTenderService(repo)
+	organizationID2 := int64(2)
 
+	err := db.QueryRow(`INSERT INTO organizations (name, description, type, created_at, updated_at) VALUES ('Test Organization 2', 'Test Organization Description 2', $1, NOW(), NOW()) RETURNING id`, "LLC").Scan(&organizationID2)
+	if err != nil {
+		panic(err)
+	}
 	// Create test tenders for different organizations
 	tenders := []*models.Tender{
 		{
@@ -283,11 +321,11 @@ func TestTenderRepository_ListByOrganizationID(t *testing.T) {
 		},
 	}
 	for _, tender := range tenders {
-		_, err := repo.Create(tender)
+		_, err := service.Create(tender)
 		assert.NoError(t, err)
 	}
 	// Act
-	retrievedTenders, err := repo.ListByOrganizationID(organizationID)
+	retrievedTenders, err := service.ListByOrganizationID(organizationID)
 
 	// Assert
 	assert.NoError(t, err)
@@ -297,8 +335,84 @@ func TestTenderRepository_ListByOrganizationID(t *testing.T) {
 	// Test empty list
 	_, err = db.Exec("DELETE FROM tenders")
 	assert.NoError(t, err)
-	retrievedTenders, err = repo.ListByOrganizationID(organizationID)
+	retrievedTenders, err = service.ListByOrganizationID(organizationID)
 	assert.NoError(t, err)
 	assert.Empty(t, retrievedTenders)
+}
+func TestTenderService_Publish(t *testing.T) {
+	setup()
+	defer teardown()
+
+	repo := repository.NewTenderRepository(db)
+	service := services.NewTenderService(repo)
+
+	tender := &models.Tender{
+		Name:            "Test Tender",
+		Description:     "Test Description",
+		OrganizationID:  organizationID,
+		PublicationDate: time.Now(),
+		EndDate:         time.Now().Add(24 * time.Hour),
+		Version:         1,
+		Status:          models.TenderStatusCreated,
+	}
+	id, err := service.Create(tender)
+	assert.NoError(t, err)
+
+	err = service.Publish(id)
+	assert.NoError(t, err)
+
+	retrievedTender, err := service.GetByID(id)
+	assert.NoError(t, err)
+	assert.Equal(t, models.TenderStatusPublished, retrievedTender.Status)
+	// Test error if tender already published
+	err = service.Publish(id)
+	assert.Error(t, err)
+	assert.EqualError(t, err, "тендер уже опубликован")
+	// test if tender not found
+	err = service.Publish(id + 1)
+	assert.Error(t, err)
+	assert.EqualError(t, err, "tender not found")
+
+}
+
+func TestTenderService_Close(t *testing.T) {
+	setup()
+	defer teardown()
+
+	repo := repository.NewTenderRepository(db)
+	service := services.NewTenderService(repo)
+
+	tender := &models.Tender{
+		Name:            "Test Tender",
+		Description:     "Test Description",
+		OrganizationID:  organizationID,
+		PublicationDate: time.Now(),
+		EndDate:         time.Now().Add(24 * time.Hour),
+		Version:         1,
+		Status:          models.TenderStatusCreated,
+	}
+	id, err := service.Create(tender)
+	assert.NoError(t, err)
+
+	err = service.Close(id)
+	assert.NoError(t, err)
+	retrievedTender, err := service.GetByID(id)
+	assert.NoError(t, err)
+	assert.Equal(t, models.TenderStatusClosed, retrievedTender.Status)
+
+	// Test error if tender already closed
+	err = service.Close(id)
+	assert.Error(t, err)
+	assert.EqualError(t, err, "тендер уже закрыт")
+	// test if tender not found
+	err = service.Close(id + 1)
+	assert.Error(t, err)
+	assert.EqualError(t, err, "tender not found")
+	//test with cancelled tender
+	tender.Status = models.TenderStatusCancelled
+	repo.Update(tender)
+	err = service.Close(id)
+	assert.Error(t, err)
+	assert.EqualError(t, err, "невозможно закрыть отмененный тендер")
 }
 */

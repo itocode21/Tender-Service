@@ -58,6 +58,10 @@ func (s *tenderService) GetByID(id int64) (*models.Tender, error) {
 
 // Update обновляет данные тендера
 func (s *tenderService) Update(tender *models.Tender) error {
+	if tender.Name == "" {
+		return errors.New("имя тендера не может быть пустым")
+	}
+
 	// Проверка существования тендера
 	existingTender, err := s.tenderRepo.GetByID(tender.ID)
 	if err != nil {
@@ -93,8 +97,13 @@ func (s *tenderService) Publish(id int64) error {
 		return err
 	}
 
+	if tender.Status == models.TenderStatusPublished {
+		return errors.New("тендер уже опубликован")
+	}
+
 	tender.Status = models.TenderStatusPublished
 	tender.UpdatedAt = time.Now()
+
 	return s.tenderRepo.Update(tender)
 }
 
@@ -105,8 +114,15 @@ func (s *tenderService) Close(id int64) error {
 		return err
 	}
 
+	if tender.Status == models.TenderStatusClosed {
+		return errors.New("тендер уже закрыт")
+	}
+
+	if tender.Status == models.TenderStatusCancelled {
+		return errors.New("невозможно закрыть отмененный тендер")
+	}
+
 	tender.Status = models.TenderStatusClosed
 	tender.UpdatedAt = time.Now()
-
 	return s.tenderRepo.Update(tender)
 }

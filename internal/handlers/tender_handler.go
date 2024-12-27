@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -30,11 +31,11 @@ func (h *TenderHandler) CreateTenderHandler(w http.ResponseWriter, r *http.Reque
 
 	id, err := h.service.Create(&tender)
 	if err != nil {
-		if err.Error() == "название тендера не может быть пустым" || err.Error() == "необходимо указать организацию" {
+		if errors.Is(err, errors.New("название тендера не может быть пустым")) || errors.Is(err, errors.New("идентификатор организации не может быть пустым")) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		http.Error(w, "Bad Requeqst", http.StatusBadRequest)
 		return
 	}
 
@@ -56,11 +57,11 @@ func (h *TenderHandler) GetTenderHandler(w http.ResponseWriter, r *http.Request)
 
 	tender, err := h.service.GetByID(id)
 	if err != nil {
-		if err.Error() == "tender not found" {
+		if errors.Is(err, errors.New("tender not found")) {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		http.Error(w, "Not Found 404", http.StatusNotFound)
 		return
 	}
 
@@ -90,7 +91,11 @@ func (h *TenderHandler) UpdateTenderHandler(w http.ResponseWriter, r *http.Reque
 
 	err = h.service.Update(&tender)
 	if err != nil {
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		if errors.Is(err, errors.New("имя тендера не может быть пустым")) || errors.Is(err, errors.New("tender not found")) {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		http.Error(w, "Bad Requeqst", http.StatusBadRequest)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
@@ -141,7 +146,7 @@ func (h *TenderHandler) GetTendersByOrganizationHandler(w http.ResponseWriter, r
 		return
 	}
 
-	tenders, err := h.service.GetByOrganizationID(organizationID)
+	tenders, err := h.service.ListByOrganizationID(organizationID)
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
@@ -165,11 +170,11 @@ func (h *TenderHandler) PublishTenderHandler(w http.ResponseWriter, r *http.Requ
 
 	err = h.service.Publish(id)
 	if err != nil {
-		if err.Error() == "тендер уже опубликован" {
+		if errors.Is(err, errors.New("тендер уже опубликован")) || errors.Is(err, errors.New("tender not found")) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
 
@@ -189,11 +194,11 @@ func (h *TenderHandler) CloseTenderHandler(w http.ResponseWriter, r *http.Reques
 
 	err = h.service.Close(id)
 	if err != nil {
-		if err.Error() == "тендер уже закрыт" || err.Error() == "невозможно закрыть отмененный тендер" {
+		if errors.Is(err, errors.New("тендер уже закрыт")) || errors.Is(err, errors.New("невозможно закрыть отмененный тендер")) || errors.Is(err, errors.New("tender not found")) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
 
@@ -211,9 +216,9 @@ func (h *TenderHandler) CancelTenderHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	err = h.service.Cancel(id)
+	err = h.service.Close(id)
 	if err != nil {
-		if err.Error() == "тендер уже отменен" || err.Error() == "невозможно отменить закрытый тендер" {
+		if errors.Is(err, errors.New("тендер уже отменен")) || errors.Is(err, errors.New("невозможно отменить закрытый тендер")) {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}

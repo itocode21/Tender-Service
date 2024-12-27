@@ -47,6 +47,9 @@ func (s *organizationService) GetByID(id int64) (*models.Organization, error) {
 
 // Update обновляет данные организации
 func (s *organizationService) Update(org *models.Organization) error {
+	if org.Name == "" {
+		return errors.New("имя организации не может быть пустым")
+	}
 	return s.orgRepo.Update(org)
 }
 
