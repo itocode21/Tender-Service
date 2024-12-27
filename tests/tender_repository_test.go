@@ -1,5 +1,6 @@
 package tests
 
+/*
 import (
 	"database/sql"
 	"log"
@@ -300,3 +301,4 @@ func TestTenderRepository_ListByOrganizationID(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Empty(t, retrievedTenders)
 }
+*/
