@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -42,6 +43,22 @@ func (h *ProposalHandler) parseTenderIDFromRequest(r *http.Request) (int64, erro
 	return id, nil
 }
 
+// handleServiceError обрабатывает ошибки сервиса
+func (h *ProposalHandler) handleServiceError(w http.ResponseWriter, err error) {
+	w.Header().Set("Content-Type", "application/json")
+	var statusCode int
+
+	switch err.Error() {
+	case "proposal not found", "tender not found":
+		statusCode = http.StatusNotFound
+	default:
+		statusCode = http.StatusBadRequest
+	}
+
+	w.WriteHeader(statusCode)
+	json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+}
+
 // sendJSONResponse отправляет JSON ответ
 func (h *ProposalHandler) sendJSONResponse(w http.ResponseWriter, data interface{}, statusCode int) {
 	w.Header().Set("Content-Type", "application/json")
@@ -59,18 +76,7 @@ func (h *ProposalHandler) CreateProposalHandler(w http.ResponseWriter, r *http.R
 
 	id, err := h.service.Create(&proposal)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		var statusCode int
-
-		switch err.Error() {
-		case "proposal not found":
-			statusCode = http.StatusNotFound
-		default:
-			statusCode = http.StatusBadRequest
-		}
-
-		w.WriteHeader(statusCode)
-		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		h.handleServiceError(w, err)
 		return
 	}
 
@@ -88,18 +94,10 @@ func (h *ProposalHandler) GetProposalHandler(w http.ResponseWriter, r *http.Requ
 
 	proposal, err := h.service.GetByID(id)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		var statusCode int
-		switch err.Error() {
-		case "proposal not found":
-			statusCode = http.StatusNotFound
-		default:
-			statusCode = http.StatusInternalServerError
-		}
-		w.WriteHeader(statusCode)
-		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		h.handleServiceError(w, err)
 		return
 	}
+
 	h.sendJSONResponse(w, proposal, http.StatusOK)
 }
 
@@ -120,18 +118,7 @@ func (h *ProposalHandler) UpdateProposalHandler(w http.ResponseWriter, r *http.R
 
 	err = h.service.Update(&proposal)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		var statusCode int
-
-		switch err.Error() {
-		case "proposal not found":
-			statusCode = http.StatusNotFound
-		default:
-			statusCode = http.StatusBadRequest
-		}
-
-		w.WriteHeader(statusCode)
-		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		h.handleServiceError(w, err)
 		return
 	}
 
@@ -148,18 +135,7 @@ func (h *ProposalHandler) DeleteProposalHandler(w http.ResponseWriter, r *http.R
 
 	err = h.service.Delete(id)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		var statusCode int
-
-		switch err.Error() {
-		case "proposal not found":
-			statusCode = http.StatusNotFound
-		default:
-			statusCode = http.StatusInternalServerError
-		}
-
-		w.WriteHeader(statusCode)
-		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		h.handleServiceError(w, err)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)
@@ -169,6 +145,7 @@ func (h *ProposalHandler) DeleteProposalHandler(w http.ResponseWriter, r *http.R
 func (h *ProposalHandler) ListProposalsHandler(w http.ResponseWriter, r *http.Request) {
 	proposals, err := h.service.List()
 	if err != nil {
+		h.handleServiceError(w, err)
 		return
 	}
 
@@ -177,16 +154,20 @@ func (h *ProposalHandler) ListProposalsHandler(w http.ResponseWriter, r *http.Re
 
 // GetProposalsByTenderHandler обрабатывает запрос на получение списка предложений по ID тендера
 func (h *ProposalHandler) GetProposalsByTenderHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	tenderID, err := h.parseTenderIDFromRequest(r)
 	if err != nil {
 		h.sendJSONResponse(w, map[string]string{"error": "Invalid ID format"}, http.StatusBadRequest)
 		return
 	}
-
+	log.Printf("handler: get proposals by tender %v", tenderID)
 	proposals, err := h.service.GetByTenderID(tenderID)
 	if err != nil {
+		log.Printf("handler: got error from service while get proposals by tender %v, error: %v", tenderID, err)
+		h.handleServiceError(w, err)
 		return
 	}
+	log.Printf("handler: get proposals by tender %v successfully %v", tenderID, proposals)
 	h.sendJSONResponse(w, proposals, http.StatusOK)
 }
 
@@ -200,18 +181,7 @@ func (h *ProposalHandler) PublishProposalHandler(w http.ResponseWriter, r *http.
 
 	err = h.service.Publish(id)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		var statusCode int
-
-		switch err.Error() {
-		case "proposal not found":
-			statusCode = http.StatusNotFound
-		default:
-			statusCode = http.StatusBadRequest
-		}
-
-		w.WriteHeader(statusCode)
-		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		h.handleServiceError(w, err)
 		return
 	}
 
@@ -228,18 +198,7 @@ func (h *ProposalHandler) AcceptProposalHandler(w http.ResponseWriter, r *http.R
 
 	err = h.service.Accept(id)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		var statusCode int
-
-		switch err.Error() {
-		case "proposal not found":
-			statusCode = http.StatusNotFound
-		default:
-			statusCode = http.StatusBadRequest
-		}
-
-		w.WriteHeader(statusCode)
-		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		h.handleServiceError(w, err)
 		return
 	}
 
@@ -257,18 +216,7 @@ func (h *ProposalHandler) RejectProposalHandler(w http.ResponseWriter, r *http.R
 
 	err = h.service.Reject(id)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		var statusCode int
-
-		switch err.Error() {
-		case "proposal not found":
-			statusCode = http.StatusNotFound
-		default:
-			statusCode = http.StatusBadRequest
-		}
-
-		w.WriteHeader(statusCode)
-		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		h.handleServiceError(w, err)
 		return
 	}
 
@@ -285,17 +233,7 @@ func (h *ProposalHandler) CancelProposalHandler(w http.ResponseWriter, r *http.R
 
 	err = h.service.Cancel(id)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		var statusCode int
-		switch err.Error() {
-		case "proposal not found":
-			statusCode = http.StatusNotFound
-		default:
-			statusCode = http.StatusBadRequest
-		}
-
-		w.WriteHeader(statusCode)
-		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		h.handleServiceError(w, err)
 		return
 	}
 

@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/itocode21/Tender-Service/internal/models"
@@ -66,24 +65,27 @@ func (s *proposalService) GetByID(id int64) (*models.Proposal, error) {
 
 // GetByTenderID получает все предложения для определенного тендера
 func (s *proposalService) GetByTenderID(tenderID int64) ([]*models.Proposal, error) {
+	_, err := s.tenderRepo.GetByID(tenderID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, errors.New("tender not found")
+		}
+		return nil, fmt.Errorf("failed to get tender: %w", err)
+	}
 	return s.proposalRepo.GetByTenderID(tenderID)
 }
 
 // Update обновляет данные предложения
 func (s *proposalService) Update(proposal *models.Proposal) error {
-	log.Printf("service: start update proposal id: %v", proposal.ID)
-
 	// Проверка существования предложения
 	existingProposal, err := s.proposalRepo.GetByID(proposal.ID)
 	if err != nil {
-		log.Printf("service: cannot get proposal with id %v error %v", proposal.ID, err)
 		if errors.Is(err, errors.New("proposal not found")) {
 			return err
 		}
 		return fmt.Errorf("failed to get proposal: %w", err)
 	}
 
-	log.Printf("service: got existing proposal %v", existingProposal)
 	// Обновляем версию
 	proposal.Version = existingProposal.Version + 1
 	proposal.UpdatedAt = time.Now()
@@ -97,18 +99,13 @@ func (s *proposalService) Update(proposal *models.Proposal) error {
 	existingProposal.TenderID = proposal.TenderID
 	existingProposal.Status = proposal.Status
 
-	log.Printf("service: updating proposal with %+v", existingProposal)
-
 	err = s.proposalRepo.Update(existingProposal)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			log.Printf("service: proposal not found for update id %v", proposal.ID)
 			return errors.New("proposal not found")
 		}
-		log.Printf("service: failed to update proposal %v with error %v", existingProposal, err)
 		return fmt.Errorf("failed to update proposal %w", err)
 	}
-	log.Printf("service: update proposal successfully %v", existingProposal)
 	return nil
 }
 
