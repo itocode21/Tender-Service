@@ -3,6 +3,8 @@ package repository
 import (
 	"database/sql"
 	"errors"
+	"fmt"
+	"log"
 
 	"github.com/itocode21/Tender-Service/internal/models"
 )
@@ -81,12 +83,23 @@ func (r *proposalRepository) GetByTenderID(tenderID int64) ([]*models.Proposal, 
 
 // Update обновляет данные предложения
 func (r *proposalRepository) Update(proposal *models.Proposal) error {
-	_, err := r.db.Exec(
+	log.Printf("repository: start update proposal id: %v", proposal.ID)
+	res, err := r.db.Exec(
 		`UPDATE proposals SET tender_id = $1, organization_id = $2, description = $3, publication_date = $4, price = $5, status = $6, version = $7, updated_at = NOW() WHERE id = $8`,
 		proposal.TenderID, proposal.OrganizationID, proposal.Description, proposal.PublicationDate, proposal.Price, proposal.Status, proposal.Version, proposal.ID)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to update proposal: %w", err)
 	}
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		log.Printf("repository: failed to get number of affected rows %v with error: %v", proposal.ID, err)
+		return fmt.Errorf("failed to get number of affected rows %w", err)
+	}
+	if rowsAffected == 0 {
+		log.Printf("repository: proposal not found for update id %v", proposal.ID)
+		return sql.ErrNoRows
+	}
+	log.Printf("repository: update proposal successfully id: %v", proposal.ID)
 	return nil
 }
 
