@@ -3,6 +3,8 @@ package repository
 import (
 	"database/sql"
 	"errors"
+	"fmt"
+	"log"
 
 	"github.com/itocode21/Tender-Service/internal/models"
 )
@@ -81,11 +83,18 @@ func (r *proposalRepository) GetByTenderID(tenderID int64) ([]*models.Proposal, 
 
 // Update обновляет данные предложения
 func (r *proposalRepository) Update(proposal *models.Proposal) error {
-	_, err := r.db.Exec(
+	res, err := r.db.Exec(
 		`UPDATE proposals SET tender_id = $1, organization_id = $2, description = $3, publication_date = $4, price = $5, status = $6, version = $7, updated_at = NOW() WHERE id = $8`,
 		proposal.TenderID, proposal.OrganizationID, proposal.Description, proposal.PublicationDate, proposal.Price, proposal.Status, proposal.Version, proposal.ID)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to update proposal: %w", err)
+	}
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get number of affected rows %w", err)
+	}
+	if rowsAffected == 0 {
+		return sql.ErrNoRows
 	}
 	return nil
 }
@@ -98,10 +107,12 @@ func (r *proposalRepository) Delete(id int64) error {
 
 // List возвращает список всех предложений
 func (r *proposalRepository) List() ([]*models.Proposal, error) {
+	log.Println("repository: start list proposals")
 	rows, err := r.db.Query(
 		`SELECT id, tender_id, organization_id, description, publication_date, price, status, version, created_at, updated_at
         FROM proposals`)
 	if err != nil {
+		log.Printf("repository: error while getting list of proposals %v", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -110,12 +121,15 @@ func (r *proposalRepository) List() ([]*models.Proposal, error) {
 	for rows.Next() {
 		var proposal models.Proposal
 		if err := rows.Scan(&proposal.ID, &proposal.TenderID, &proposal.OrganizationID, &proposal.Description, &proposal.PublicationDate, &proposal.Price, &proposal.Status, &proposal.Version, &proposal.CreatedAt, &proposal.UpdatedAt); err != nil {
+			log.Printf("repository: error scanning row %v", err)
 			return nil, err
 		}
 		proposals = append(proposals, &proposal)
 	}
 	if err := rows.Err(); err != nil {
+		log.Printf("repository: error after scanning all rows %v", err)
 		return nil, err
 	}
+	log.Printf("repository: got %v proposals", len(proposals))
 	return proposals, nil
 }

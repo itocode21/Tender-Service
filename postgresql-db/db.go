@@ -137,9 +137,12 @@ func createTables(tx *sql.Tx) error {
         CREATE TABLE IF NOT EXISTS proposals (
             id SERIAL PRIMARY KEY,
             tender_id INT REFERENCES tenders(id) ON DELETE CASCADE,
-            employee_id INT REFERENCES employees(id) ON DELETE CASCADE,
+			organization_id INT REFERENCES organizations(id) ON DELETE CASCADE,
             description TEXT,
+			publication_date TIMESTAMP NOT NULL,
+			price NUMERIC NOT NULL,
 			status VARCHAR(50) NOT NULL DEFAULT 'created',
+			version INT NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )

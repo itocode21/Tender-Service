@@ -1,6 +1,7 @@
 package services
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"time"
@@ -64,6 +65,13 @@ func (s *proposalService) GetByID(id int64) (*models.Proposal, error) {
 
 // GetByTenderID получает все предложения для определенного тендера
 func (s *proposalService) GetByTenderID(tenderID int64) ([]*models.Proposal, error) {
+	_, err := s.tenderRepo.GetByID(tenderID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, errors.New("tender not found")
+		}
+		return nil, fmt.Errorf("failed to get tender: %w", err)
+	}
 	return s.proposalRepo.GetByTenderID(tenderID)
 }
 
@@ -72,13 +80,33 @@ func (s *proposalService) Update(proposal *models.Proposal) error {
 	// Проверка существования предложения
 	existingProposal, err := s.proposalRepo.GetByID(proposal.ID)
 	if err != nil {
-		return err
+		if errors.Is(err, errors.New("proposal not found")) {
+			return err
+		}
+		return fmt.Errorf("failed to get proposal: %w", err)
 	}
 
 	// Обновляем версию
 	proposal.Version = existingProposal.Version + 1
 	proposal.UpdatedAt = time.Now()
-	return s.proposalRepo.Update(proposal)
+
+	existingProposal.Description = proposal.Description
+	existingProposal.OrganizationID = proposal.OrganizationID
+	existingProposal.Price = proposal.Price
+	existingProposal.PublicationDate = proposal.PublicationDate
+	existingProposal.UpdatedAt = proposal.UpdatedAt
+	existingProposal.Version = proposal.Version
+	existingProposal.TenderID = proposal.TenderID
+	existingProposal.Status = proposal.Status
+
+	err = s.proposalRepo.Update(existingProposal)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return errors.New("proposal not found")
+		}
+		return fmt.Errorf("failed to update proposal %w", err)
+	}
+	return nil
 }
 
 // Delete удаляет предложение по ID
@@ -115,10 +143,6 @@ func (s *proposalService) Accept(id int64) error {
 		return fmt.Errorf("предложение не найдено: %w", err)
 	}
 
-	if proposal.Status == models.ProposalStatusAccepted {
-		return errors.New("предложение уже принято")
-	}
-
 	tender, err := s.tenderRepo.GetByID(proposal.TenderID)
 	if err != nil {
 		return fmt.Errorf("тендер не найден: %w", err)
@@ -130,6 +154,10 @@ func (s *proposalService) Accept(id int64) error {
 
 	if tender.Status == models.TenderStatusCancelled {
 		return errors.New("невозможно принять предложение для отмененного тендера")
+	}
+
+	if proposal.Status == models.ProposalStatusAccepted {
+		return errors.New("предложение уже принято")
 	}
 
 	proposal.Status = models.ProposalStatusAccepted
