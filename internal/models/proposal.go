@@ -2,7 +2,7 @@ package models
 
 import "time"
 
-// ProposalStatus представляет собой статус предложения.
+// статусы предложения
 type ProposalStatus string
 
 const (
@@ -19,7 +19,7 @@ type Proposal struct {
 	OrganizationID  int64          `json:"organization_id"`
 	Description     string         `json:"description"`
 	PublicationDate time.Time      `json:"publication_date"`
-	Price           float64        `json:"price"`
+	Price           float64        `json:"price"` //просто чтобы было, не кортошкой же платить организациям?
 	Status          ProposalStatus `json:"status"`
 	Version         int            `json:"version"`
 	CreatedAt       time.Time      `json:"created_at"`

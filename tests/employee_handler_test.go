@@ -55,8 +55,8 @@ func TestRegisterHandler_Success(t *testing.T) {
 	setup()
 	defer teardown()
 
-	repo := repository.NewEmployeeRepository(db) // Используйте вашу реализацию репозитория
-	service := services.NewEmployeeService(repo) // Передайте репозиторий в сервис
+	repo := repository.NewEmployeeRepository(db)
+	service := services.NewEmployeeService(repo)
 	handler := handlers.NewEmployeeHandler(service)
 
 	user := models.User{
@@ -109,8 +109,8 @@ func TestRegisterHandler_InternalServerError(t *testing.T) {
 	service := services.NewEmployeeService(repo)
 	handler := handlers.NewEmployeeHandler(service)
 
-	// Создайте пользователя с недопустимыми данными, чтобы вызвать ошибку
-	user := models.User{ // Например, пустое имя пользователя
+
+	user := models.User{
 		Username:  "",
 		FirstName: "John",
 		LastName:  "Doe",
@@ -140,9 +140,9 @@ func TestGetUserHandler_Success(t *testing.T) {
 		FirstName: "AvitoName",
 		LastName:  "AvitoLastName",
 	}
-	registeredID, _ := service.Register(&user) // Получаем ID
+	registeredID, _ := service.Register(&user)
 
-	req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/user/%d", registeredID), nil) // Используем ID в URL
+	req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/user/%d", registeredID), nil)
 	req = mux.SetURLVars(req, map[string]string{"id": fmt.Sprintf("%d", registeredID)})
 	w := httptest.NewRecorder()
 
@@ -168,7 +168,7 @@ func TestGetUserHandler_NotFound(t *testing.T) {
 	service := services.NewEmployeeService(repo)
 	handler := handlers.NewEmployeeHandler(service)
 
-	req := httptest.NewRequest(http.MethodGet, "/user/999", nil) // ID, который не существует
+	req := httptest.NewRequest(http.MethodGet, "/user/999", nil)
 	req = mux.SetURLVars(req, map[string]string{"id": "999"})
 	w := httptest.NewRecorder()
 

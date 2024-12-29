@@ -86,7 +86,6 @@ func TestProposalHandlers(t *testing.T) {
 	proposalService := services.NewProposalService(proposalRepo, tenderRepo)
 	handler := handlers.NewProposalHandler(proposalService)
 
-	// Create a new mux router
 	router := mux.NewRouter()
 	router.HandleFunc("/proposals", handler.CreateProposalHandler).Methods("POST")
 	router.HandleFunc("/proposals/{id}", handler.GetProposalHandler).Methods("GET")
@@ -631,7 +630,6 @@ func TestProposalHandlers(t *testing.T) {
 	})
 	t.Run("GetProposalsByTenderHandler_Error", func(t *testing.T) {
 		clearDatabase(db)
-		// Crucial: Create a tender (or get the ID of a tender if it already exists)
 		org := models.Organization{
 			Id:          1,
 			Name:        "Test Org",

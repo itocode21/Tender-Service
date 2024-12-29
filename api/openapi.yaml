@@ -291,6 +291,14 @@ paths:
       responses:
         '200':
           description: Тендер успешно опубликован.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                    message:
+                        type: string
+                        description: message for response
         '400':
           description: Некорректный ввод.
         '500':
@@ -309,6 +317,14 @@ paths:
       responses:
         '200':
           description: Тендер успешно закрыт.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                    message:
+                        type: string
+                        description: message for response
         '400':
           description: Некорректный ввод.
         '500':
@@ -327,6 +343,14 @@ paths:
         responses:
           '200':
             description: Тендер успешно отменен.
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                        type: string
+                        description: message for response
           '400':
             description: Некорректный ввод.
           '500':
@@ -432,7 +456,7 @@ paths:
           description: Некорректный ввод.
         '500':
             description: Ошибка сервера.
-  /proposals/tender/{tender_id}:
+  /tenders/{tender_id}/proposals:
     get:
       summary: Получить список предложений по ID тендера
       parameters:
@@ -470,6 +494,14 @@ paths:
       responses:
         '200':
           description: Предложение успешно опубликовано.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                    message:
+                        type: string
+                        description: message for response
         '400':
           description: Некорректный ввод.
         '500':
@@ -488,6 +520,14 @@ paths:
       responses:
         '200':
           description: Предложение успешно принято.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                    message:
+                        type: string
+                        description: message for response
         '400':
           description: Некорректный ввод.
         '500':
@@ -506,6 +546,14 @@ paths:
       responses:
         '200':
           description: Предложение успешно отклонено.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                    message:
+                        type: string
+                        description: message for response
         '400':
           description: Некорректный ввод.
         '500':
@@ -524,6 +572,14 @@ paths:
         responses:
           '200':
             description: Предложение успешно отменено.
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                        type: string
+                        description: message for response
           '400':
             description: Некорректный ввод.
           '500':
@@ -562,9 +618,13 @@ components:
           format: int64
           description: Уникальный идентификатор связи
         organization_id:
-           $ref: '#/components/schemas/Organization'
+           type: integer
+           format: int64
+           description: ID организации
         user_id:
-           $ref: '#/components/schemas/User'
+           type: integer
+           format: int64
+           description: ID пользователя
     Tender:
       type: object
       properties:
@@ -645,3 +705,20 @@ components:
           type: integer
           format: int64
           description: Уникальный идентификатор пользователя
+        username:
+          type: string
+          description: Имя пользователя
+        firstName:
+          type: string
+          description: Имя пользователя
+        lastName:
+          type: string
+          description: Фамилия пользователя
+        created_at:
+          type: string
+          format: date-time
+          description: Время создания записи
+        updated_at:
+          type: string
+          format: date-time
+          description: Время последнего обновления записи

@@ -1,5 +1,7 @@
 package utils
 
+/*
+А тут должны были быт jwt токены но тоже не понадобилось
 import (
 	"errors"
 	"time"
@@ -36,3 +38,4 @@ func ValidateToken(token string) (string, error) {
 	email := claims["email"].(string)
 	return email, nil
 }
+*/

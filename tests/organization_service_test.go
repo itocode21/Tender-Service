@@ -155,7 +155,6 @@ func TestListOrganizations(t *testing.T) {
 
 }
 
-// TestAddResponsible тестирует добавление ответственного лица
 func TestAddResponsible(t *testing.T) {
 	setup()
 	defer teardown()
@@ -199,7 +198,6 @@ func TestAddResponsible(t *testing.T) {
 	})
 }
 
-// TestRemoveResponsible тестирует удаление ответственного лица
 func TestRemoveResponsible(t *testing.T) {
 	setup()
 	defer teardown()

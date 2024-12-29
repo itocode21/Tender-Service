@@ -10,17 +10,14 @@ import (
 	"github.com/itocode21/Tender-Service/internal/services"
 )
 
-// OrganizationHandler структура для обработки запросов к организациям
 type OrganizationHandler struct {
 	service services.OrganizationService
 }
 
-// NewOrganizationHandler создает новый экземпляр OrganizationHandler
 func NewOrganizationHandler(service services.OrganizationService) *OrganizationHandler {
 	return &OrganizationHandler{service: service}
 }
 
-// CreateOrganizationHandler обрабатывает создание новой организации
 func (h *OrganizationHandler) CreateOrganizationHandler(w http.ResponseWriter, r *http.Request) {
 	var org models.Organization
 	if err := json.NewDecoder(r.Body).Decode(&org); err != nil {
@@ -43,7 +40,6 @@ func (h *OrganizationHandler) CreateOrganizationHandler(w http.ResponseWriter, r
 	json.NewEncoder(w).Encode(org)
 }
 
-// GetOrganizationHandler обрабатывает запрос на получение организации по ID
 func (h *OrganizationHandler) GetOrganizationHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	idStr := vars["id"]
@@ -69,7 +65,6 @@ func (h *OrganizationHandler) GetOrganizationHandler(w http.ResponseWriter, r *h
 	json.NewEncoder(w).Encode(org)
 }
 
-// UpdateOrganizationHandler обрабатывает запрос на обновление организации
 func (h *OrganizationHandler) UpdateOrganizationHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	idStr := vars["id"]
@@ -101,7 +96,6 @@ func (h *OrganizationHandler) UpdateOrganizationHandler(w http.ResponseWriter, r
 	json.NewEncoder(w).Encode(org)
 }
 
-// DeleteOrganizationHandler обрабатывает запрос на удаление организации
 func (h *OrganizationHandler) DeleteOrganizationHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	idStr := vars["id"]
@@ -121,7 +115,6 @@ func (h *OrganizationHandler) DeleteOrganizationHandler(w http.ResponseWriter, r
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// ListOrganizationsHandler обрабатывает запрос на получение списка организаций
 func (h *OrganizationHandler) ListOrganizationsHandler(w http.ResponseWriter, r *http.Request) {
 	orgs, err := h.service.List()
 	if err != nil {
@@ -134,7 +127,6 @@ func (h *OrganizationHandler) ListOrganizationsHandler(w http.ResponseWriter, r 
 	json.NewEncoder(w).Encode(orgs)
 }
 
-// AddResponsibleHandler обрабатывает запрос на добавление ответственного за организацию
 func (h *OrganizationHandler) AddResponsibleHandler(w http.ResponseWriter, r *http.Request) {
 	var orgResp models.OrganizationResponsible
 	if err := json.NewDecoder(r.Body).Decode(&orgResp); err != nil {
@@ -157,7 +149,6 @@ func (h *OrganizationHandler) AddResponsibleHandler(w http.ResponseWriter, r *ht
 	json.NewEncoder(w).Encode(orgResp)
 }
 
-// RemoveResponsibleHandler обрабатывает запрос на удаление ответственного за организацию
 func (h *OrganizationHandler) RemoveResponsibleHandler(w http.ResponseWriter, r *http.Request) {
 	var orgResp models.OrganizationResponsible
 	if err := json.NewDecoder(r.Body).Decode(&orgResp); err != nil {

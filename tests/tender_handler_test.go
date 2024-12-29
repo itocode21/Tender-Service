@@ -99,7 +99,6 @@ func TestTenderHandler_CreateTenderHandler(t *testing.T) {
 	assert.Equal(t, tender.Description, createdTender.Description)
 	assert.Equal(t, tender.OrganizationID, createdTender.OrganizationID)
 
-	//test with invalid input
 	invalidTender := &models.Tender{
 		Name:            "",
 		Description:     "Test Description",
@@ -113,7 +112,6 @@ func TestTenderHandler_CreateTenderHandler(t *testing.T) {
 	router.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 
-	//test with invalid organization
 	invalidTender = &models.Tender{
 		Name:            "Test Tender",
 		Description:     "Test Description",
@@ -158,13 +156,11 @@ func TestTenderHandler_GetTenderHandler(t *testing.T) {
 	assert.Equal(t, tender.Description, retrievedTender.Description)
 	assert.Equal(t, tender.OrganizationID, retrievedTender.OrganizationID)
 
-	//test for not found
 	req, _ = http.NewRequest("GET", fmt.Sprintf("/tenders/%d", id+1), nil)
 	w = httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusNotFound, w.Code)
 
-	//test for invalid id
 	req, _ = http.NewRequest("GET", "/tenders/invalid-id", nil)
 	w = httptest.NewRecorder()
 	router.ServeHTTP(w, req)
@@ -211,7 +207,6 @@ func TestTenderHandler_UpdateTenderHandler(t *testing.T) {
 	assert.Equal(t, updatedTender.Description, retrievedTender.Description)
 	assert.Equal(t, updatedTender.OrganizationID, retrievedTender.OrganizationID)
 
-	// Test with invalid input
 	invalidTender := &models.Tender{
 		Name:            "",
 		Description:     "Updated Test Description",
@@ -225,7 +220,6 @@ func TestTenderHandler_UpdateTenderHandler(t *testing.T) {
 	router.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 
-	//test with invalid id
 	jsonValue, _ = json.Marshal(updatedTender)
 	req, _ = http.NewRequest("PUT", "/tenders/invalid-id", bytes.NewBuffer(jsonValue))
 	w = httptest.NewRecorder()
@@ -261,7 +255,6 @@ func TestTenderHandler_DeleteTenderHandler(t *testing.T) {
 
 	assert.Equal(t, http.StatusNoContent, w.Code)
 
-	//test with invalid id
 	req, _ = http.NewRequest("DELETE", "/tenders/invalid-id", nil)
 	w = httptest.NewRecorder()
 
@@ -349,7 +342,6 @@ func TestTenderHandler_GetTendersByOrganizationHandler(t *testing.T) {
 	json.NewDecoder(w.Body).Decode(&retrievedTenders)
 	assert.Len(t, retrievedTenders, len(tenders))
 
-	// Test with invalid organization id
 	req, _ = http.NewRequest("GET", "/organizations/invalid-id/tenders", nil)
 	w = httptest.NewRecorder()
 	router.ServeHTTP(w, req)
@@ -382,14 +374,12 @@ func TestTenderHandler_PublishTenderHandler(t *testing.T) {
 	router.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
 
-	//test for already published
 	req, _ = http.NewRequest("PUT", fmt.Sprintf("/tenders/%d/publish", id), nil)
 	w = httptest.NewRecorder()
 
 	router.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 
-	// Test for invalid id
 	req, _ = http.NewRequest("PUT", "/tenders/invalid-id/publish", nil)
 	w = httptest.NewRecorder()
 	router.ServeHTTP(w, req)
@@ -422,13 +412,11 @@ func TestTenderHandler_CloseTenderHandler(t *testing.T) {
 	router.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusOK, w.Code)
 
-	//test for already closed
 	req, _ = http.NewRequest("PUT", fmt.Sprintf("/tenders/%d/close", id), nil)
 	w = httptest.NewRecorder()
 
 	router.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusBadRequest, w.Code)
-	// Test for invalid id
 	req, _ = http.NewRequest("PUT", "/tenders/invalid-id/close", nil)
 	w = httptest.NewRecorder()
 	router.ServeHTTP(w, req)

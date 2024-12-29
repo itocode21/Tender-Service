@@ -8,7 +8,9 @@ import (
 	IE  bool
 	LLC bool
 	JSC bool
-}*/
+}
+	хотел поначалу вот так сделать, но чуть покумекал и понял что const надежнее и более масштабируемо
+*/
 
 type OrganizationType string
 

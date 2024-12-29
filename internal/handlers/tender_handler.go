@@ -11,17 +11,14 @@ import (
 	"github.com/itocode21/Tender-Service/internal/services"
 )
 
-// TenderHandler структура для обработки запросов к тендерам
 type TenderHandler struct {
 	service services.TenderService
 }
 
-// NewTenderHandler создает новый экземпляр TenderHandler
 func NewTenderHandler(service services.TenderService) *TenderHandler {
 	return &TenderHandler{service: service}
 }
 
-// CreateTenderHandler обрабатывает запрос на создание нового тендера
 func (h *TenderHandler) CreateTenderHandler(w http.ResponseWriter, r *http.Request) {
 	var tender models.Tender
 	if err := json.NewDecoder(r.Body).Decode(&tender); err != nil {
@@ -44,7 +41,6 @@ func (h *TenderHandler) CreateTenderHandler(w http.ResponseWriter, r *http.Reque
 	json.NewEncoder(w).Encode(tender)
 }
 
-// GetTenderHandler обрабатывает запрос на получение тендера по ID
 func (h *TenderHandler) GetTenderHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	idStr := vars["id"]
@@ -70,7 +66,6 @@ func (h *TenderHandler) GetTenderHandler(w http.ResponseWriter, r *http.Request)
 	json.NewEncoder(w).Encode(tender)
 }
 
-// UpdateTenderHandler обрабатывает запрос на обновление тендера
 func (h *TenderHandler) UpdateTenderHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	idStr := vars["id"]
@@ -102,7 +97,6 @@ func (h *TenderHandler) UpdateTenderHandler(w http.ResponseWriter, r *http.Reque
 	json.NewEncoder(w).Encode(tender)
 }
 
-// DeleteTenderHandler обрабатывает запрос на удаление тендера
 func (h *TenderHandler) DeleteTenderHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	idStr := vars["id"]
@@ -122,7 +116,6 @@ func (h *TenderHandler) DeleteTenderHandler(w http.ResponseWriter, r *http.Reque
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// ListTendersHandler обрабатывает запрос на получение списка тендеров
 func (h *TenderHandler) ListTendersHandler(w http.ResponseWriter, r *http.Request) {
 	tenders, err := h.service.List()
 	if err != nil {
@@ -135,7 +128,6 @@ func (h *TenderHandler) ListTendersHandler(w http.ResponseWriter, r *http.Reques
 	json.NewEncoder(w).Encode(tenders)
 }
 
-// GetTendersByOrganizationHandler обрабатывает запрос на получение списка тендеров по ID организации
 func (h *TenderHandler) GetTendersByOrganizationHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	idStr := vars["organization_id"]
@@ -157,7 +149,6 @@ func (h *TenderHandler) GetTendersByOrganizationHandler(w http.ResponseWriter, r
 
 }
 
-// PublishTenderHandler устанавливает статус тендера как "published"
 func (h *TenderHandler) PublishTenderHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	idStr := vars["id"]
@@ -181,7 +172,6 @@ func (h *TenderHandler) PublishTenderHandler(w http.ResponseWriter, r *http.Requ
 	w.WriteHeader(http.StatusOK)
 }
 
-// CloseTenderHandler устанавливает статус тендера как "closed"
 func (h *TenderHandler) CloseTenderHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	idStr := vars["id"]
@@ -205,7 +195,6 @@ func (h *TenderHandler) CloseTenderHandler(w http.ResponseWriter, r *http.Reques
 	w.WriteHeader(http.StatusOK)
 }
 
-// CancelTenderHandler устанавливает статус тендера как "cancelled"
 func (h *TenderHandler) CancelTenderHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	idStr := vars["id"]

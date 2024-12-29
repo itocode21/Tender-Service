@@ -43,9 +43,9 @@ func TestEmployeeRepository_Create(t *testing.T) {
 		LastName:  "AvitoLastName",
 	}
 
-	id, err := repo.Create(employee) // Обратите внимание на изменение здесь
+	id, err := repo.Create(employee)
 	assert.NoError(t, err)
-	assert.NotEmpty(t, id) // Проверяем, что ID был присвоен
+	assert.NotEmpty(t, id)
 
 	var count int
 	err = db.QueryRow("SELECT COUNT(*) FROM employees WHERE username=$1", employee.Username).Scan(&count)
@@ -64,12 +64,12 @@ func TestEmployeeRepository_GetByID(t *testing.T) {
 		FirstName: "AvitoName",
 		LastName:  "AvitolastName",
 	}
-	id, err := repo.Create(employee) // Обратите внимание на изменение здесь
+	id, err := repo.Create(employee)
 	assert.NoError(t, err)
 
 	fetchedEmployee, err := repo.GetByID(id)
 	assert.NoError(t, err)
-	assert.NotNil(t, fetchedEmployee) // Проверяем, что пользователь был найден
+	assert.NotNil(t, fetchedEmployee)
 	assert.Equal(t, employee.Username, fetchedEmployee.Username)
 }
 
@@ -85,14 +85,12 @@ func TestEmployeeRepository_GetByUsername(t *testing.T) {
 		LastName:  "AvitolastName",
 	}
 
-	// Изменяем здесь, чтобы сохранить ID и ошибку
 	_, err := repo.Create(employee)
 	assert.NoError(t, err)
 
-	// Теперь вы можете использовать employee.Username для поиска
 	fetchedEmployee, err := repo.GetByUsername(employee.Username)
 	assert.NoError(t, err)
-	assert.NotNil(t, fetchedEmployee) // Проверяем, что пользователь был найден
+	assert.NotNil(t, fetchedEmployee)
 	assert.Equal(t, employee.Username, fetchedEmployee.Username)
 }
 */

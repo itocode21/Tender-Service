@@ -128,13 +128,11 @@ func TestOrganizationHandler_GetOrganizationHandler(t *testing.T) {
 	assert.Equal(t, org.Description, retrievedOrg.Description)
 	assert.Equal(t, org.Type, retrievedOrg.Type)
 
-	//test for not found
 	req, _ = http.NewRequest("GET", fmt.Sprintf("/organizations/%d", id+1), nil)
 	w = httptest.NewRecorder()
 	router.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusNotFound, w.Code)
 
-	//test for invalid id
 	req, _ = http.NewRequest("GET", "/organizations/invalid-id", nil)
 	w = httptest.NewRecorder()
 	router.ServeHTTP(w, req)
@@ -176,7 +174,6 @@ func TestOrganizationHandler_UpdateOrganizationHandler(t *testing.T) {
 	assert.Equal(t, updatedOrg.Description, retrievedOrg.Description)
 	assert.Equal(t, updatedOrg.Type, retrievedOrg.Type)
 
-	// Test with invalid input
 	invalidOrg := &models.Organization{
 		Name:        "",
 		Description: "Updated Test Description",
@@ -188,7 +185,6 @@ func TestOrganizationHandler_UpdateOrganizationHandler(t *testing.T) {
 	router.ServeHTTP(w, req)
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 
-	//test with invalid id
 	jsonValue, _ = json.Marshal(updatedOrg)
 	req, _ = http.NewRequest("PUT", "/organizations/invalid-id", bytes.NewBuffer(jsonValue))
 	w = httptest.NewRecorder()
@@ -222,7 +218,6 @@ func TestOrganizationHandler_DeleteOrganizationHandler(t *testing.T) {
 
 	assert.Equal(t, http.StatusNoContent, w.Code)
 
-	//test with invalid id
 	req, _ = http.NewRequest("DELETE", "/organizations/invalid-id", nil)
 	w = httptest.NewRecorder()
 
