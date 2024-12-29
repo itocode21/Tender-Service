@@ -6,7 +6,7 @@
 
 ## Установка
 
-1.  Установите Go (версия 1.23 или выше). Вы можете скачать Go с [https://go.dev/dl/](https://go.dev/dl/).
+1.  Установите Go (версия 1.21 или выше). Вы можете скачать Go с [https://go.dev/dl/](https://go.dev/dl/).
 2.  Установите Docker и Docker Compose. Docker Desktop можно скачать отсюда [https://www.docker.com/products/docker-desktop/](https://www.docker.com/products/docker-desktop/).
 3. Установите GolangCI-lint  с [https://github.com/golangci/golangci-lint#installation](https://github.com/golangci/golangci-lint#installation)
 4.  Клонируйте репозиторий:
@@ -26,7 +26,7 @@
     DB_PORT=5432
     DB_USER=ito21
     DB_PASSWORD=1899
-    DB_NAME=TENDER --> ВАЖНО ДБ ИМЯ ДОЛЖНО БЫТЬ ВСЕГДА TENDER, все сиквел запросы написанос этим условием
+    DB_NAME=TENDER --> ВАЖНО ИСПОЛЬЗОВАТЬ ИМЯ ДБ  TENDER
     ```
 2. Убедитесь что значения в файле `docker-compose.yaml` совпадают с файлом `.env`
 
@@ -47,5 +47,8 @@
 4. Для удаления docker сетей:
    ```bash
    make network-prune
-
-   
+    ```
+5.  Для запуска приложения в dev режиме:
+    ```bash
+    make run
+    ```  
