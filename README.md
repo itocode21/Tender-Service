@@ -52,3 +52,35 @@
     ```bash
     make run
     ```  
+## Тестирование API
+
+Вы можете использовать Postman или cURL для тестирования API, отправляя запросы на `http://localhost:8080`.
+
+### Примеры API запросов
+
+#### Создание организации
+
+**Метод:** `POST`
+
+**URL:** `http://localhost:8080/organizations`
+
+**Тело запроса (JSON):**
+
+```json
+{
+  "name": "Test Organization",
+  "description": "This is a test organization.",
+  "type": "LLC"
+}
+```
+### Пример ответа (JSON):
+```
+{
+    "id": 1,
+    "name": "Test Organization",
+    "description": "This is a test organization.",
+    "type": "LLC",
+    "created_at": "2024-01-19T21:07:35.766786Z",
+    "updated_at": "2024-01-19T21:07:35.766786Z"
+} 
+```
