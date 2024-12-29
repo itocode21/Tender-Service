@@ -2,7 +2,6 @@ package models
 
 import "time"
 
-// TenderStatus представляет собой статус тендера.
 type TenderStatus string
 
 const (
@@ -20,7 +19,7 @@ type Tender struct {
 	PublicationDate time.Time    `json:"publication_date"`
 	EndDate         time.Time    `json:"end_date"`
 	Status          TenderStatus `json:"status"`
-	Version         int          `json:"version"` // Добавили поле Version
+	Version         int          `json:"version"`
 	CreatedAt       time.Time    `json:"created_at"`
 	UpdatedAt       time.Time    `json:"updated_at"`
 }

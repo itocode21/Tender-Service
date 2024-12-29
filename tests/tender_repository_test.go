@@ -81,14 +81,11 @@ func TestTenderRepository_Create(t *testing.T) {
 		Version:         1,
 		Status:          models.TenderStatusCreated,
 	}
-	// Act
 	id, err := repo.Create(tender)
 
-	// Assert
 	assert.NoError(t, err)
 	assert.NotEqual(t, int64(0), id)
 
-	// проверяем что статус был записан в базу данных
 	retrievedTender, err := repo.GetByID(id)
 	assert.NoError(t, err)
 	assert.Equal(t, models.TenderStatusCreated, retrievedTender.Status)
@@ -112,9 +109,7 @@ func TestTenderRepository_GetByID(t *testing.T) {
 	id, err := repo.Create(tender)
 	assert.NoError(t, err)
 
-	// Act
 	retrievedTender, err := repo.GetByID(id)
-	// Assert
 	assert.NoError(t, err)
 	assert.Equal(t, tender.Name, retrievedTender.Name)
 	assert.Equal(t, tender.Description, retrievedTender.Description)
@@ -122,7 +117,6 @@ func TestTenderRepository_GetByID(t *testing.T) {
 	assert.Equal(t, tender.Version, retrievedTender.Version)
 	assert.Equal(t, tender.Status, retrievedTender.Status)
 
-	// Test non-existent tender
 	_, err = repo.GetByID(id + 1)
 	assert.Error(t, err)
 	assert.EqualError(t, err, "tender not found")
@@ -145,13 +139,11 @@ func TestTenderRepository_Update(t *testing.T) {
 	id, err := repo.Create(tender)
 	assert.NoError(t, err)
 
-	// Act
 	tender.Name = "Updated Test Tender"
 	tender.Description = "Updated Test Description"
 	tender.Version = 2
 	err = repo.Update(tender)
 
-	// Assert
 	assert.NoError(t, err)
 
 	updatedTender, err := repo.GetByID(id)
@@ -161,7 +153,6 @@ func TestTenderRepository_Update(t *testing.T) {
 	assert.Equal(t, tender.Version, updatedTender.Version)
 	assert.Equal(t, tender.Status, updatedTender.Status)
 
-	// Update non-existent tender - no error expected
 	tender.ID = id + 1
 	err = repo.Update(tender)
 	assert.NoError(t, err)
@@ -185,16 +176,13 @@ func TestTenderRepository_Delete(t *testing.T) {
 	id, err := repo.Create(tender)
 	assert.NoError(t, err)
 
-	// Act
 	err = repo.Delete(id)
 	assert.NoError(t, err)
 
-	// Assert that the tender is deleted
 	_, err = repo.GetByID(id)
 	assert.Error(t, err)
 	assert.EqualError(t, err, "tender not found")
 
-	// Delete non-existent tender - no error expected
 	err = repo.Delete(id)
 	assert.NoError(t, err)
 }
@@ -204,7 +192,6 @@ func TestTenderRepository_List(t *testing.T) {
 
 	repo := repository.NewTenderRepository(db)
 
-	// Create test tenders
 	tenders := []*models.Tender{
 		{
 			Name:            "Test Tender 1",
@@ -229,15 +216,13 @@ func TestTenderRepository_List(t *testing.T) {
 		_, err := repo.Create(tender)
 		assert.NoError(t, err)
 	}
-	// Act
+
 	retrievedTenders, err := repo.List()
 
-	// Assert
 	assert.NoError(t, err)
 	assert.NotNil(t, retrievedTenders)
 	assert.Len(t, retrievedTenders, len(tenders))
 
-	// Test empty list
 	_, err = db.Exec("DELETE FROM tenders")
 	assert.NoError(t, err)
 	retrievedTenders, err = repo.List()
@@ -252,7 +237,6 @@ func TestTenderRepository_ListByOrganizationID(t *testing.T) {
 
 	repo := repository.NewTenderRepository(db)
 
-	// Create test tenders for different organizations
 	tenders := []*models.Tender{
 		{
 			Name:            "Test Tender 1",
@@ -275,7 +259,7 @@ func TestTenderRepository_ListByOrganizationID(t *testing.T) {
 		{
 			Name:            "Test Tender 3",
 			Description:     "Test Description 3",
-			OrganizationID:  organizationID2, // another organization
+			OrganizationID:  organizationID2,
 			PublicationDate: time.Now(),
 			EndDate:         time.Now().Add(24 * time.Hour),
 			Version:         1,
@@ -286,15 +270,12 @@ func TestTenderRepository_ListByOrganizationID(t *testing.T) {
 		_, err := repo.Create(tender)
 		assert.NoError(t, err)
 	}
-	// Act
 	retrievedTenders, err := repo.ListByOrganizationID(organizationID)
 
-	// Assert
 	assert.NoError(t, err)
 	assert.NotNil(t, retrievedTenders)
 	assert.Len(t, retrievedTenders, 2)
 
-	// Test empty list
 	_, err = db.Exec("DELETE FROM tenders")
 	assert.NoError(t, err)
 	retrievedTenders, err = repo.ListByOrganizationID(organizationID)

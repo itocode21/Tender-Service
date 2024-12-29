@@ -15,12 +15,10 @@ type EmployeeHandler struct {
 	service services.EmployeeService
 }
 
-// NewEmployeeHandler создает новый экземпляр EmployeeHandler
 func NewEmployeeHandler(service services.EmployeeService) *EmployeeHandler {
 	return &EmployeeHandler{service: service}
 }
 
-// RegisterHandler обрабатывает регистрацию пользователя
 func (h *EmployeeHandler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	var user models.User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
@@ -31,30 +29,26 @@ func (h *EmployeeHandler) RegisterHandler(w http.ResponseWriter, r *http.Request
 	// Регистрация пользователя
 	id, err := h.service.Create(&user)
 	if err != nil {
-		// Если ошибка связана с пустым именем пользователя, возвращаем статус 400
 		if err.Error() == "username cannot be empty" {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		// Для других ошибок возвращаем статус 500
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
-
-	// Заполнение полей ID и других данных пользователя
-	user.Id = id                // Предполагается, что `id` - это ID, который получили от сервиса
-	user.CreatedAt = time.Now() // Заполняем дату создания
-	user.UpdatedAt = time.Now() // Заполняем дату обновления
+	user.Id = id // Предполагается, что id это ID, который мы получили от сервиса
+	user.CreatedAt = time.Now()
+	user.UpdatedAt = time.Now()
 
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(user) // Возвращаем полную информацию о пользователе
+	json.NewEncoder(w).Encode(user)
 }
 
-// GetUser Handler обрабатывает запрос на получение пользователя по ID
+// тут настроил пирамид,  но как более чисто реализовать(чтобы работало при этом) я не знаю.
 func (h *EmployeeHandler) GetUserHandler(w http.ResponseWriter, r *http.Request) {
-	// Извлечение ID из URL
+	// Извлечение id из URL
 	vars := mux.Vars(r) // Используем mux для извлечения переменных из URL
-	idStr := vars["id"] // Сохраняем ID как строку
+	idStr := vars["id"] // Сохраняем id как строку
 
 	// Преобразование ID из строки в int
 	id, err := strconv.Atoi(idStr)
@@ -63,7 +57,6 @@ func (h *EmployeeHandler) GetUserHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	// Получение пользователя из сервиса
-
 	user, err := h.service.GetByID(id)
 	if err != nil {
 		if err.Error() == "user not found" {
@@ -74,7 +67,6 @@ func (h *EmployeeHandler) GetUserHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	// Установка заголовка Content-Type и отправка ответа
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(user); err != nil {

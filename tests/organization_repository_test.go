@@ -60,10 +60,8 @@ func TestOrganizationRepository_Create(t *testing.T) {
 		Type:        models.OrganizationTypeLLC,
 	}
 
-	// Act
 	id, err := repo.Create(org)
 
-	// Assert
 	assert.NoError(t, err)
 	assert.NotEqual(t, int64(0), id)
 
@@ -88,15 +86,12 @@ func TestOrganizationRepository_GetByID(t *testing.T) {
 
 	id, err := repo.Create(org)
 	assert.NoError(t, err)
-	// Act
 	retrievedOrg, err := repo.GetByID(id)
-	// Assert
 	assert.NoError(t, err)
 	assert.Equal(t, org.Name, retrievedOrg.Name)
 	assert.Equal(t, org.Description, retrievedOrg.Description)
 	assert.Equal(t, org.Type, retrievedOrg.Type)
 
-	// Test non-existent tender
 	_, err = repo.GetByID(id + 1)
 	assert.Error(t, err)
 	assert.EqualError(t, err, "organization not found")
@@ -115,13 +110,11 @@ func TestOrganizationRepository_Update(t *testing.T) {
 	id, err := repo.Create(org)
 	assert.NoError(t, err)
 
-	// Act
 	org.Name = "Updated Test Organization"
 	org.Description = "Updated Test Description"
 	org.Type = models.OrganizationTypeJSC
 	err = repo.Update(org)
 
-	// Assert
 	assert.NoError(t, err)
 
 	updatedOrg, err := repo.GetByID(id)
@@ -130,7 +123,6 @@ func TestOrganizationRepository_Update(t *testing.T) {
 	assert.Equal(t, org.Description, updatedOrg.Description)
 	assert.Equal(t, org.Type, updatedOrg.Type)
 
-	// Update non-existent tender - no error expected
 	org.Id = id + 1
 	err = repo.Update(org)
 	assert.NoError(t, err)
@@ -150,16 +142,13 @@ func TestOrganizationRepository_Delete(t *testing.T) {
 	id, err := repo.Create(org)
 	assert.NoError(t, err)
 
-	// Act
 	err = repo.Delete(id)
 	assert.NoError(t, err)
 
-	// Assert that the tender is deleted
 	_, err = repo.GetByID(id)
 	assert.Error(t, err)
 	assert.EqualError(t, err, "organization not found")
 
-	// Delete non-existent tender - no error expected
 	err = repo.Delete(id)
 	assert.NoError(t, err)
 }
@@ -168,7 +157,6 @@ func TestOrganizationRepository_List(t *testing.T) {
 	setup()
 	defer teardown()
 	repo := repository.NewOrganizationRepository(db)
-	// Create test organizations
 	organizations := []*models.Organization{
 		{
 			Name:        "Test Organization 1",

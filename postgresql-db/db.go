@@ -33,18 +33,17 @@ func InitDB() (*sql.DB, error) {
 		return nil, fmt.Errorf("ошибка подключения к базе данных: %w", err)
 	}
 
-	// Проверка подключения, обработка sql.ErrNoRows
 	err = db.Ping()
 	if err != nil {
 		return nil, fmt.Errorf("ошибка проверки подключения к базе данных: %w", err)
 	}
 
-	// Создаем транзакцию
+	// Как мне показалось  транзакции это супер хорошо здесь, чтобы не пропустить создание важных сущностей и enum
 	tx, err := db.Begin()
 	if err != nil {
 		return nil, fmt.Errorf("ошибка начала транзакции: %w", err)
 	}
-	defer tx.Rollback() // Автоматический откат если ошибка
+	defer tx.Rollback() // а если что-то случится то тут мы откатимся то момента ошибки что в целом хорошо
 
 	if err := createTables(tx); err != nil {
 		return nil, fmt.Errorf("ошибка при создании таблиц: %w", err)
@@ -54,7 +53,7 @@ func InitDB() (*sql.DB, error) {
 		return nil, fmt.Errorf("ошибка коммита транзакции: %w", err)
 	}
 
-	return db, nil // Возвращаем подключение
+	return db, nil
 }
 
 func createTables(tx *sql.Tx) error {
@@ -71,7 +70,6 @@ func createTables(tx *sql.Tx) error {
 		return fmt.Errorf("ошибка при создании типа organization_type: %w", err)
 	}
 
-	// Создание таблицы employees
 	_, err = tx.Exec(`
         CREATE TABLE IF NOT EXISTS employees (
             id SERIAL PRIMARY KEY,
@@ -86,7 +84,6 @@ func createTables(tx *sql.Tx) error {
 		return fmt.Errorf("ошибка при создании таблицы employees: %w", err)
 	}
 
-	// Создание таблицы organizations
 	_, err = tx.Exec(`
         CREATE TABLE IF NOT EXISTS organizations (
             id SERIAL PRIMARY KEY,
@@ -101,7 +98,6 @@ func createTables(tx *sql.Tx) error {
 		return fmt.Errorf("ошибка при создании таблицы organizations: %w", err)
 	}
 
-	// Создание таблицы organization_responsibles
 	_, err = tx.Exec(`
         CREATE TABLE IF NOT EXISTS organization_responsibles (
             id SERIAL PRIMARY KEY,
@@ -113,7 +109,6 @@ func createTables(tx *sql.Tx) error {
 		return fmt.Errorf("ошибка при создании таблицы organization_responsibles: %w", err)
 	}
 
-	// Создание таблицы tenders
 	_, err = tx.Exec(`
         CREATE TABLE IF NOT EXISTS tenders (
             id SERIAL PRIMARY KEY,
@@ -132,7 +127,6 @@ func createTables(tx *sql.Tx) error {
 		return fmt.Errorf("ошибка при создании таблицы tenders: %w", err)
 	}
 
-	// Создание таблицы proposals
 	_, err = tx.Exec(`
         CREATE TABLE IF NOT EXISTS proposals (
             id SERIAL PRIMARY KEY,

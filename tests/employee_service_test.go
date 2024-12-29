@@ -13,7 +13,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// --- START - Database setup ---
 var db *sql.DB
 
 func setup() {
@@ -39,9 +38,7 @@ func teardown() {
 	_ = db.Close()
 }
 
-// --- END - Database setup ---
 
-// --- START - TestCreateEmployee ---
 func TestCreateEmployee(t *testing.T) {
 	setup()
 	defer teardown()
@@ -76,9 +73,6 @@ func TestCreateEmployee(t *testing.T) {
 
 }
 
-// --- END - TestCreateEmployee ---
-
-// --- START - TestGetEmployeeByID ---
 func TestGetEmployeeByID(t *testing.T) {
 	setup()
 	defer teardown()
@@ -114,9 +108,6 @@ func TestGetEmployeeByID(t *testing.T) {
 	})
 }
 
-// --- END - TestGetEmployeeByID ---
-
-// --- START - TestUpdateEmployee ---
 func TestUpdateEmployee(t *testing.T) {
 	setup()
 	defer teardown()
@@ -144,9 +135,6 @@ func TestUpdateEmployee(t *testing.T) {
 
 }
 
-// --- END - TestUpdateEmployee ---
-
-// --- START - TestDeleteEmployee ---
 func TestDeleteEmployee(t *testing.T) {
 	setup()
 	defer teardown()
@@ -171,9 +159,6 @@ func TestDeleteEmployee(t *testing.T) {
 	})
 }
 
-// --- END - TestDeleteEmployee ---
-
-// --- START - TestListEmployees ---
 func TestListEmployees(t *testing.T) {
 	setup()
 	defer teardown()
@@ -209,6 +194,4 @@ func TestListEmployees(t *testing.T) {
 	})
 
 }
-
-// --- END - TestListEmployees ---
 */

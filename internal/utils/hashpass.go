@@ -1,5 +1,7 @@
 package utils
 
+/*
+В ГОЛОВЕ ЭТО ДОЛЖНА БЫЛА БЫТЬ УТИЛКА ДЛЯ ХЕША ПАРОЛЯ ПРИ РЕГИСТРАЦИИ ПОЛЬЗОВАТЕЛЯ, НО НЕ ПРИГОДИТСЯ.
 import "golang.org/x/crypto/bcrypt"
 
 func HashPass(password string) (string, error) {
@@ -15,3 +17,4 @@ func CheckHash(password string, hashedPassword string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 	return err == nil
 }
+*/

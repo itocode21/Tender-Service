@@ -31,7 +31,6 @@ func setup() {
 	if err != nil {
 		panic(err)
 	}
-	// Create a test organization
 	err = db.QueryRow(`INSERT INTO organizations (name, description, type, created_at, updated_at) VALUES ('Test Organization', 'Test Organization Description', $1, NOW(), NOW()) RETURNING id`, "LLC").Scan(&organizationID)
 	if err != nil {
 		panic(err)
@@ -67,9 +66,7 @@ func TestProposalRepository_Create(t *testing.T) {
 		Price:           100.00,
 		Version:         1,
 	}
-	// Act
 	id, err := repo.Create(proposal)
-	// Assert
 	assert.NoError(t, err)
 	assert.NotEqual(t, int64(0), id)
 
@@ -94,10 +91,8 @@ func TestProposalRepository_GetByID(t *testing.T) {
 	}
 	id, _ := repo.Create(proposal)
 
-	// Act
 	retrievedProposal, err := repo.GetByID(id)
 
-	// Assert
 	assert.NoError(t, err)
 	assert.Equal(t, proposal.Description, retrievedProposal.Description)
 	assert.Equal(t, proposal.TenderID, retrievedProposal.TenderID)
@@ -105,7 +100,6 @@ func TestProposalRepository_GetByID(t *testing.T) {
 	assert.Equal(t, proposal.Price, retrievedProposal.Price)
 	assert.Equal(t, proposal.Version, retrievedProposal.Version)
 
-	// Test non-existent proposal
 	_, err = repo.GetByID(id + 1)
 	assert.Error(t, err)
 	assert.EqualError(t, err, "proposal not found")
@@ -128,12 +122,9 @@ func TestProposalRepository_Update(t *testing.T) {
 	id, _ := repo.Create(proposal)
 	retrievedProposal, _ := repo.GetByID(id)
 
-	// Act
 	retrievedProposal.Description = "Updated Test Proposal"
 	retrievedProposal.Price = 200.00
 	err := repo.Update(retrievedProposal)
-
-	// Assert
 	assert.NoError(t, err)
 
 	updatedProposal, _ := repo.GetByID(id)
@@ -157,9 +148,7 @@ func TestProposalRepository_Delete(t *testing.T) {
 		Version:         1,
 	}
 	id, _ := repo.Create(proposal)
-	// Act
 	err := repo.Delete(id)
-	//Assert
 	assert.NoError(t, err)
 
 	_, err = repo.GetByID(id)
@@ -198,14 +187,11 @@ func TestProposalRepository_List(t *testing.T) {
 		repo.Create(proposal)
 	}
 
-	// Act
 	retrievedProposals, err := repo.List()
-	// Assert
 	assert.NoError(t, err)
 	assert.NotNil(t, retrievedProposals)
 	assert.Len(t, retrievedProposals, len(proposals))
 
-	// Test empty list
 	_, err = db.Exec("DELETE FROM proposals")
 	assert.NoError(t, err)
 	retrievedProposals, err = repo.List()
@@ -253,14 +239,11 @@ func TestProposalRepository_GetByTenderID(t *testing.T) {
 		repo.Create(proposal)
 	}
 
-	// Act
 	retrievedProposals, err := repo.GetByTenderID(tenderID)
-	// Assert
 	assert.NoError(t, err)
 	assert.NotNil(t, retrievedProposals)
 	assert.Len(t, retrievedProposals, 2)
 
-	// Test empty list
 	_, err = db.Exec("DELETE FROM proposals")
 	assert.NoError(t, err)
 	retrievedProposals, err = repo.GetByTenderID(tenderID)

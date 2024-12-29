@@ -9,7 +9,6 @@ import (
 	_ "github.com/jackc/pgx/v4/stdlib"
 )
 
-// EmployeeRepository определяет контракт для работы с данными сотрудников
 type EmployeeRepository interface {
 	Create(employee *models.User) (int64, error)
 	GetByID(id int64) (*models.User, error)
@@ -18,17 +17,14 @@ type EmployeeRepository interface {
 	List() ([]*models.User, error)
 }
 
-// EmployeeRepositoryImpl - реализация интерфейса repository.EmployeeRepository
 type EmployeeRepositoryImpl struct {
 	db *sql.DB
 }
 
-// NewEmployeeRepository создает новый репозиторий для работы с сотрудниками
 func NewEmployeeRepository(db *sql.DB) EmployeeRepository {
 	return &EmployeeRepositoryImpl{db: db}
 }
 
-// Create создает нового сотрудника
 func (r *EmployeeRepositoryImpl) Create(employee *models.User) (int64, error) {
 	query := `INSERT INTO employees (username, first_name, last_name, created_at, updated_at) 
               VALUES ($1, $2, $3, $4, $5) RETURNING id`
@@ -43,7 +39,6 @@ func (r *EmployeeRepositoryImpl) Create(employee *models.User) (int64, error) {
 	return id, nil
 }
 
-// GetByID получает сотрудника по ID
 func (r *EmployeeRepositoryImpl) GetByID(id int64) (*models.User, error) {
 	query := `SELECT id, username, first_name, last_name, created_at, updated_at FROM employees WHERE id = $1`
 	var employee models.User
@@ -60,7 +55,6 @@ func (r *EmployeeRepositoryImpl) GetByID(id int64) (*models.User, error) {
 	return &employee, nil
 }
 
-// Update обновляет данные сотрудника
 func (r *EmployeeRepositoryImpl) Update(employee *models.User) error {
 	query := `UPDATE employees SET username = $1, first_name = $2, last_name = $3, updated_at = $4 WHERE id = $5`
 	_, err := r.db.Exec(query, employee.Username, employee.FirstName, employee.LastName, employee.UpdatedAt, employee.Id)
@@ -70,7 +64,6 @@ func (r *EmployeeRepositoryImpl) Update(employee *models.User) error {
 	return nil
 }
 
-// Delete удаляет сотрудника по ID
 func (r *EmployeeRepositoryImpl) Delete(id int64) error {
 	query := `DELETE FROM employees WHERE id = $1`
 	_, err := r.db.Exec(query, id)
@@ -80,7 +73,6 @@ func (r *EmployeeRepositoryImpl) Delete(id int64) error {
 	return nil
 }
 
-// List возвращает список всех сотрудников
 func (r *EmployeeRepositoryImpl) List() ([]*models.User, error) {
 	query := `SELECT id, username, first_name, last_name, created_at, updated_at FROM employees`
 	rows, err := r.db.Query(query)

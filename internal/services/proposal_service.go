@@ -10,7 +10,6 @@ import (
 	"github.com/itocode21/Tender-Service/internal/repository"
 )
 
-// ProposalService интерфейс для работы с предложениями
 type ProposalService interface {
 	Create(proposal *models.Proposal) (int64, error)
 	GetByID(id int64) (*models.Proposal, error)
@@ -29,12 +28,10 @@ type proposalService struct {
 	tenderRepo   repository.TenderRepository
 }
 
-// NewProposalService создает новый экземпляр ProposalService
 func NewProposalService(proposalRepo repository.ProposalRepository, tenderRepo repository.TenderRepository) ProposalService {
 	return &proposalService{proposalRepo: proposalRepo, tenderRepo: tenderRepo}
 }
 
-// Create создает новое предложение
 func (s *proposalService) Create(proposal *models.Proposal) (int64, error) {
 	if proposal.Description == "" {
 		return 0, errors.New("описание предложения не может быть пустым")
@@ -58,12 +55,10 @@ func (s *proposalService) Create(proposal *models.Proposal) (int64, error) {
 	return id, nil
 }
 
-// GetByID получает предложение по ID
 func (s *proposalService) GetByID(id int64) (*models.Proposal, error) {
 	return s.proposalRepo.GetByID(id)
 }
 
-// GetByTenderID получает все предложения для определенного тендера
 func (s *proposalService) GetByTenderID(tenderID int64) ([]*models.Proposal, error) {
 	_, err := s.tenderRepo.GetByID(tenderID)
 	if err != nil {
@@ -75,9 +70,7 @@ func (s *proposalService) GetByTenderID(tenderID int64) ([]*models.Proposal, err
 	return s.proposalRepo.GetByTenderID(tenderID)
 }
 
-// Update обновляет данные предложения
 func (s *proposalService) Update(proposal *models.Proposal) error {
-	// Проверка существования предложения
 	existingProposal, err := s.proposalRepo.GetByID(proposal.ID)
 	if err != nil {
 		if errors.Is(err, errors.New("proposal not found")) {
@@ -86,7 +79,6 @@ func (s *proposalService) Update(proposal *models.Proposal) error {
 		return fmt.Errorf("failed to get proposal: %w", err)
 	}
 
-	// Обновляем версию
 	proposal.Version = existingProposal.Version + 1
 	proposal.UpdatedAt = time.Now()
 
@@ -109,17 +101,14 @@ func (s *proposalService) Update(proposal *models.Proposal) error {
 	return nil
 }
 
-// Delete удаляет предложение по ID
 func (s *proposalService) Delete(id int64) error {
 	return s.proposalRepo.Delete(id)
 }
 
-// List возвращает список всех предложений
 func (s *proposalService) List() ([]*models.Proposal, error) {
 	return s.proposalRepo.List()
 }
 
-// Publish устанавливает статус предложения как "published"
 func (s *proposalService) Publish(id int64) error {
 	proposal, err := s.proposalRepo.GetByID(id)
 	if err != nil {
@@ -136,7 +125,6 @@ func (s *proposalService) Publish(id int64) error {
 	return s.proposalRepo.Update(proposal)
 }
 
-// Accept устанавливает статус предложения как "accepted" и закрывает тендер
 func (s *proposalService) Accept(id int64) error {
 	proposal, err := s.proposalRepo.GetByID(id)
 	if err != nil {
@@ -171,7 +159,6 @@ func (s *proposalService) Accept(id int64) error {
 	return s.tenderRepo.Update(tender)
 }
 
-// Reject устанавливает статус предложения как "rejected"
 func (s *proposalService) Reject(id int64) error {
 	proposal, err := s.proposalRepo.GetByID(id)
 	if err != nil {
@@ -191,7 +178,6 @@ func (s *proposalService) Reject(id int64) error {
 	return s.proposalRepo.Update(proposal)
 }
 
-// Cancel устанавливает статус предложения как "cancelled"
 func (s *proposalService) Cancel(id int64) error {
 	proposal, err := s.proposalRepo.GetByID(id)
 	if err != nil {
