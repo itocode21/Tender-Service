@@ -311,4 +311,4 @@
     "updated_at": "2024-01-20T10:00:00Z"
 }
 ```
-#### Больше информации по api и endpoint смотри в /api
+#### Больше информации по api и endpoint смотри в /api (я вот тут смотрю обычно https://editor.swagger.io/ )
