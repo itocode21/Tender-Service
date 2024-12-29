@@ -10,9 +10,9 @@ services:
       - postgres
     environment:
       - PORT=8080
-      - POSTGRES_USER=ito21  # <-- ИЗМЕНЕНИЕ ЗДЕСЬ
-      - POSTGRES_PASSWORD=1899 # <-- ИЗМЕНЕНИЕ ЗДЕСЬ
-      - POSTGRES_DB=TENDER     # <-- ИЗМЕНЕНИЕ ЗДЕСЬ
+      - POSTGRES_USER=ito21  
+      - POSTGRES_PASSWORD=1899 
+      - POSTGRES_DB=TENDER     
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
     networks:
@@ -20,9 +20,9 @@ services:
   postgres:
     image: postgres:15-alpine
     environment:
-      - POSTGRES_USER=ito21   # <-- ИЗМЕНЕНИЕ ЗДЕСЬ
-      - POSTGRES_PASSWORD=1899 # <-- ИЗМЕНЕНИЕ ЗДЕСЬ
-      - POSTGRES_DB=TENDER    # <-- ИЗМЕНЕНИЕ ЗДЕСЬ
+      - POSTGRES_USER=ito21   
+      - POSTGRES_PASSWORD=1899 
+      - POSTGRES_DB=TENDER    
     ports:
       - "5432:5432"
     volumes:
