@@ -74,7 +74,7 @@
 }
 ```
 ### Пример ответа (JSON):
-```
+```json
 {
     "id": 1,
     "name": "Test Organization",
@@ -83,4 +83,231 @@
     "created_at": "2024-01-19T21:07:35.766786Z",
     "updated_at": "2024-01-19T21:07:35.766786Z"
 } 
+```
+
+#### Получение списка тендеров
+
+**Метод:** `GET`
+
+**URL:** `http://localhost:8080/tenders`
+
+### Пример ответа (JSON):
+```json
+[
+    {
+        "id": 1,
+        "name": "test tender",
+        "description": "this is a test tender",
+        "organization_id": 1,
+        "publication_date": "2024-01-19T21:38:01.190237Z",
+        "end_date": "2024-01-20T21:38:01.190237Z",
+        "status": "published",
+        "created_at": "2024-01-19T21:38:01.190237Z",
+        "updated_at": "2024-01-19T21:38:01.190237Z"
+    }
+]
+```
+
+#### Получение списка предложений по тендеру
+
+
+**Метод:** `GET`
+
+**URL:** `http://localhost:8080/tenders/{tender_id}/proposals` (где `{tender_id}` - это id тендера)
+
+### Пример ответа (JSON):
+```json
+[
+    {
+        "id": 1,
+        "tender_id": 1,
+        "organization_id": 1,
+        "description": "proposal description",
+        "price": 100,
+        "status": "pending",
+        "created_at": "2024-01-20T00:35:30.151671Z",
+        "updated_at": "2024-01-20T00:35:30.151671Z"
+    }
+]
+```
+
+#### Создание тендера
+
+**Метод:** `POST`
+
+**URL:** `http://localhost:8080/tenders`
+
+**Тело запроса (JSON):**
+
+```json
+{
+    "name": "Test Tender",
+    "description": "This is a test tender.",
+    "organization_id": 1,
+    "publication_date": "2024-01-20T12:00:00Z",
+    "end_date": "2024-01-27T12:00:00Z"
+}
+```
+### Пример ответа (JSON):
+```json
+{
+    "id": 1,
+    "name": "Test Tender",
+    "description": "This is a test tender.",
+    "organization_id": 1,
+    "publication_date": "2024-01-20T12:00:00Z",
+    "end_date": "2024-01-27T12:00:00Z",
+    "status": "draft",
+    "created_at": "2024-01-20T09:15:00Z",
+    "updated_at": "2024-01-20T09:15:00Z"
+}
+```
+
+#### Создание предложения
+
+**Метод:** `POST`
+
+**URL:** `http://localhost:8080/proposals`
+
+**Тело запроса (JSON):**
+
+```json
+{
+    "tender_id": 1,
+    "organization_id": 1,
+    "description": "proposal description",
+    "price": 100
+}
+```
+### Пример ответа (JSON):
+```json
+{
+    "id": 1,
+    "tender_id": 1,
+    "organization_id": 1,
+    "description": "proposal description",
+    "price": 100,
+    "status": "pending",
+    "created_at": "2024-01-20T09:15:00Z",
+    "updated_at": "2024-01-20T09:15:00Z"
+}
+```
+
+#### Обновление организации
+
+**Метод:** `PUT`
+
+**URL:** `http://localhost:8080/organizations/{id}` где `{id}` - это id организации)
+
+**Тело запроса (JSON):**
+
+```json
+{
+  "name": "Updated Test Organization",
+  "description": "This is an updated test organization.",
+    "type": "JSC"
+}
+```
+### Пример ответа (JSON):
+```json
+{
+    "id": 1,
+    "name": "Updated Test Organization",
+    "description": "This is an updated test organization.",
+    "type": "JSC",
+    "created_at": "2024-01-19T21:07:35.766786Z",
+    "updated_at": "2024-01-20T10:00:00Z"
+}
+```
+
+#### Удаление организации
+
+**Метод:** `DELETE`
+
+**URL:** `http://localhost:8080/organizations/{id}` где `{id}` - это id организации)
+
+**Тело запроса (JSON):**
+
+### Пример ответа (JSON):
+```json
+{
+ "message": "Organization deleted successfully"
+}
+```
+
+#### Получение организации по ID
+
+**Метод:** `GET`
+
+**URL:** `http://localhost:8080/organizations/{id}` где `{id}` - это id организации)
+
+### Пример ответа (JSON):
+```json
+{
+    "id": 1,
+    "name": "Test Organization",
+    "description": "This is a test organization.",
+    "type": "LLC",
+    "created_at": "2024-01-19T21:07:35.766786Z",
+    "updated_at": "2024-01-19T21:07:35.766786Z"
+}
+```
+
+#### Обновление тендера
+
+**Метод:** `PUT`
+
+**URL:** `http://localhost:8080/tenders/{id}` (где `{id}` - это id тендера)
+
+**Тело запроса (JSON):**
+
+```json
+{
+    "name": "Updated Test Tender",
+    "description": "This is updated test tender",
+    "publication_date": "2024-01-22T12:00:00Z",
+    "end_date": "2024-01-29T12:00:00Z"
+}
+```
+### Пример ответа (JSON):
+```json
+{
+    "id": 1,
+    "name": "Updated Test Tender",
+    "description": "This is updated test tender",
+    "organization_id": 1,
+    "publication_date": "2024-01-22T12:00:00Z",
+    "end_date": "2024-01-29T12:00:00Z",
+    "status": "draft",
+    "created_at": "2024-01-20T09:15:00Z",
+     "updated_at": "2024-01-20T10:00:00Z"
+}
+```
+
+#### Обновление предложения
+
+**Метод:** `PUT`
+
+**URL:** `http://localhost:8080/proposals/{id}` (где `{id}` - это id предложения)
+
+**Тело запроса (JSON):**
+
+```json
+{
+    "description": "Updated proposal description",
+    "price": 200
+}
+```
+### Пример ответа (JSON):
+```json
+{
+    "id": 1,
+    "tender_id": 1,
+    "organization_id": 1,
+    "description": "Updated proposal description",
+    "price": 200,
+    "status": "pending",
+    "created_at": "2024-01-20T09:15:00Z",
+    "updated_at": "2024-01-20T10:00:00Z"
+}
 ```
