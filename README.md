@@ -312,3 +312,33 @@
 }
 ```
 #### Больше информации по api и endpoint смотри в /api
+
+### Конфигурация линтера
+
+Для статического анализа кода используется `golangci-lint`. Конфигурационный файл находится в корне проекта и называется `.golangci.yml`.
+
+```yaml
+run:
+  # Установите путь до директории проекта
+  # dir: ./
+  skip-dirs:
+    - ./vendor
+
+linters-settings:
+  govet:
+    check-shadowing: true
+
+linters:
+  enable:
+    - govet
+    - errcheck
+    - staticcheck
+    - gosimple
+    - unused
+    - ineffassign
+  #  disable:
+    #  - typecheck
+
+issues:
+  exclude:
+    - 'file is not go source file' # ignore warning about generated files
