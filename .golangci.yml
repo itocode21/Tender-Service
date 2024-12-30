@@ -1,0 +1,20 @@
+run:
+  # Установите путь до директории проекта
+  # dir: ./
+  skip-dirs:
+    - ./vendor
+
+linters-settings:
+  govet:
+    check-shadowing: true
+
+linters:
+  enable:
+    - govet
+    - errcheck
+    - staticcheck
+    - gosimple
+    - unused
+    - ineffassign
+  #  disable:
+    #  - typecheck
