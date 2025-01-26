@@ -1,4 +1,5 @@
 # Tender Service API
+[![Go Report Card](https://goreportcard.com/badge/github.com/itocode21/Tender-Service)](https://goreportcard.com/report/github.com/itocode21/Tender-Service)
 
 ## Описание
 
